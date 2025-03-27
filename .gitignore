@@ -1,0 +1,52 @@
+# Compiled class files
+/target/
+/out/
+/bin/
+
+# IDE-specific files
+*.iml
+.idea/
+.vscode/
+*.swp
+
+# Logs and temp files
+*.log
+logs/
+nohup.out
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Dependency directories
+/node_modules/
+/bower_components/
+
+# Maven specific files
+.mvn/
+pom.xml.tag
+pom.xml.releaseBackup
+dependency-reduced-pom.xml
+buildNumber.properties
+
+# Spring Boot specific
+.env
+/*.jar
+/*.war
+/*.ear
+
+# Docker
+docker-compose.override.yml
+.dockerignore
+
+# Kubernetes
+/k8s/*.yaml
+
+# MongoDB data (if using local volumes)
+data/
+mongo-data/
+
+# IntelliJ IDEA
+*.ipr
+*.iws
+
