@@ -1,4 +1,3 @@
-// models/VoucherModel.js
 const mongoose = require('mongoose');
 
 const VoucherSchema = new mongoose.Schema({
