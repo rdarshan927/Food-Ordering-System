@@ -3,6 +3,7 @@ const dotenv = require("dotenv");
 const cors = require("cors");
 const connectDB = require("./config/db.js");
 const paymentRoutes = require("./Routes/PaymentRoute");
+const voucherRoutes = require('./Routes/VoucherRoutes');
 
 dotenv.config();
 const app = express();
@@ -24,6 +25,7 @@ app.get("/", (req, res) => res.send("🚀 Payment API is running..."));
 
 // Payment Routes
 app.use("/api/payments", paymentRoutes);
+app.use("/api/vouchers",voucherRoutes);
 
 // Server Setup
 const PORT = process.env.PORT || 5056;
