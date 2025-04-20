@@ -19,6 +19,7 @@ nohup.out
 Thumbs.db
 
 # Dependency directories
+/frontend/node_modules/
 /node_modules/
 /bower_components/
 
