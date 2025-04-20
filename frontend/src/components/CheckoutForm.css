@@ -1,0 +1,100 @@
+/* General Page Styling */
+body {
+    font-family: "Poppins", sans-serif;
+    background-color: #f5f7fa;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+
+/* Payment Container */
+.payment-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+}
+
+/* Payment Box */
+.payment-box {
+    background: #ffffff;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    width: 400px;
+    text-align: center;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.checkout-title {
+    font-size: 1.5rem; /* Changed to relative units for better scaling */
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.checkout-description {
+    font-size: 1rem; /* Changed to relative units for better scaling */
+    color: #666;
+    margin-bottom: 20px;
+}
+
+/* Hover Effect on Payment Box */
+.payment-box:hover {
+    transform: translateY(-5px);
+    box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* Payment Title */
+.payment-title {
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 20px;
+    color: #333;
+}
+
+/* Card Input */
+.card-input {
+    padding: 15px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background: white;
+    margin-bottom: 20px;
+}
+
+/* Pay Button */
+.pay-btn {
+    width: 100%;
+    padding: 12px;
+    background-color: #6772e5;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.pay-btn:hover {
+    background-color: #5469d4;
+}
+
+.pay-btn:disabled {
+    background-color: #bbb;
+    cursor: not-allowed;
+}
+
+/* Responsive Design */
+@media (max-width: 480px) {
+    .payment-box {
+        width: 90%;
+        padding: 20px;
+    }
+
+    .payment-title {
+        font-size: 20px;
+    }
+}

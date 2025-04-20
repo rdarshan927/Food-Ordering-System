@@ -1,4 +1,7 @@
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import { PayPalScriptProvider } from "@paypal/react-paypal-js";
+import Checkout from "./pages/payment/Checkout.jsx"; 
+import PayPalButton from "./components/PayPalButton.jsx"; 
 
 import Header from "./components/Header";
 import Home from "./pages/Home";
@@ -15,19 +18,24 @@ const DriverDeliveryPageWrapper = () => {
 
 function App() {
   return (
+    // Only one Router wrapping everything
     <Router>
-      <div className="min-h-screen flex flex-col">
-        <Header />
-        <main className="flex-grow">
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/driverdashboard" element={<DriverDashboard />} />
-            <Route path="/driver/:driverId" element={<DriverDeliveryPageWrapper />} />
-            <Route path="/auth/login" element={<Login />} />
-            <Route path="/auth/register" element={<Register />} />
-          </Routes>
-        </main>
-      </div>
+      <PayPalScriptProvider options={{ "client-id": "YOUR_PAYPAL_CLIENT_ID" }}>
+        <div className="min-h-screen flex flex-col">
+          <Header />
+          <main className="flex-grow">
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/driverdashboard" element={<DriverDashboard />} />
+              <Route path="/driver/:driverId" element={<DriverDeliveryPageWrapper />} />
+              <Route path="/auth/login" element={<Login />} />
+              <Route path="/auth/register" element={<Register />} />
+              {/* PayPal checkout page route */}
+              <Route path="/checkout" element={<Checkout />} />
+            </Routes>
+          </main>
+        </div>
+      </PayPalScriptProvider>
     </Router>
   );
 }

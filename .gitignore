@@ -51,3 +51,4 @@ mongo-data/
 *.ipr
 *.iws
 
+.qodo
