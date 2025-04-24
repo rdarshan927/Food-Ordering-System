@@ -1,0 +1,36 @@
+{
+  "name": "project-rdarshan927",
+  "version": "1.0.0",
+  "description": "[![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-22041afd0340ce965d47ae6ef1cefeee28c7c493a6346c4f15d667ab976d596c.svg)](https://classroom.github.com/a/xIbq4TFL)",
+  "main": "server.js",
+  "scripts": {
+    "test": "jest",
+    "start": "nodemon server.js",
+    "dev": "nodemon server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "amqplib": "^0.10.7",
+    "axios": "^1.8.1",
+    "bcryptjs": "^3.0.2",
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.10.1",
+    "node-cron": "^3.0.3",
+    "nodemailer": "^6.10.0",
+    "socket.io": "^4.8.1"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.26.9",
+    "@babel/preset-env": "^7.26.9",
+    "babel-jest": "^29.7.0",
+    "dotenv": "^16.4.7",
+    "jest": "^29.7.0",
+    "mongodb-memory-server": "^10.1.4",
+    "nodemon": "^3.1.9",
+    "supertest": "^7.0.0"
+  }
+}
