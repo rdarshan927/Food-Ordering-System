@@ -4,7 +4,7 @@ import { loadStripe } from "@stripe/stripe-js";
 import { Elements, CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
 import './PaymentForm.css';
 
-const stripePromise = loadStripe("pk_test_XXXXXXXXXXXXXXXXXXXXXXXX");
+const stripePromise = loadStripe("pk_test_51RA7PB2XiQfMIAieydMtNj0L7W56UZd5PQfDz3Y3wDvTv5DC7PgrpXYC52XvToeOHF1pCkN4tU9IeRdwn5ijHL2b005J6WyZTu");
 
 const PaymentOptions = () => {
   const stripe = useStripe();
@@ -17,7 +17,7 @@ const PaymentOptions = () => {
 
   const handleVoucherCheck = async () => {
     try {
-      const response = await axios.get(`http://localhost:5000/api/vouchers/${voucherCode}`);
+      const response = await axios.get(`http://localhost:5056/api/vouchers/${voucherCode}`);
       const now = new Date();
       const expiry = new Date(response.data.expirationDate);
 
@@ -38,26 +38,38 @@ const PaymentOptions = () => {
     e.preventDefault();
     setLoading(true);
 
+    if (!stripe || !elements) {
+      alert("Stripe not loaded yet.");
+      setLoading(false);
+      return;
+    }
+
     switch (selectedMethod) {
       case "card":
         try {
-          const { data } = await axios.post("http://localhost:5000/api/stripe/create-payment-intent", {
-            amount: 1000,
+          const { data } = await axios.post("http://localhost:5056/api/stripe/create-payment-intent", {
+            amount: 1000, // amount in cents = $10.00
             currency: "usd"
           });
 
           const result = await stripe.confirmCardPayment(data.clientSecret, {
             payment_method: {
               card: elements.getElement(CardElement),
+              billing_details: {
+                name: "Test User",
+              },
             },
           });
 
           if (result.error) {
             alert(`Payment failed: ${result.error.message}`);
           } else {
-            alert("Card payment successful!");
+            if (result.paymentIntent.status === "succeeded") {
+              alert("Card payment successful!");
+            }
           }
-        } catch {
+        } catch (err) {
+          console.error("Stripe card error:", err);
           alert("An error occurred while processing payment.");
         }
         break;
@@ -72,11 +84,11 @@ const PaymentOptions = () => {
 
       case "paypal":
         try {
-          const { data } = await axios.post("http://localhost:5000/api/paypal/create-payment", {
-            amount: "10.00", // example
+          const { data } = await axios.post("http://localhost:5056/api/paypal/create-payment", {
+            amount: "10.00",
             currency: "USD",
           });
-          window.location.href = data.forwardLink; // redirect to PayPal
+          window.location.href = data.forwardLink;
         } catch {
           alert("PayPal payment creation failed.");
         }

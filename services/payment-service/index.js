@@ -5,6 +5,7 @@ const connectDB = require("./config/db.js");
 const paymentRoutes = require("./Routes/PaymentRoute");
 const voucherRoutes = require('./Routes/VoucherRoutes');
 const paypalRoutes = require("./Routes/paypalRoutes");
+const stripeRotes = require("./Routes/stripeRoutes");
 
 dotenv.config();
 const app = express();
@@ -28,6 +29,7 @@ app.get("/", (req, res) => res.send("🚀 Payment API is running..."));
 app.use("/api/payments", paymentRoutes);
 app.use("/api/vouchers",voucherRoutes);
 app.use("/api/paypal", paypalRoutes);
+app.use("/api/stripe", stripeRotes);
 
 // Server Setup
 const PORT = process.env.PORT || 5056;
