@@ -6,6 +6,6 @@ import java.util.Optional;
 
 public interface DeliveryRepository extends MongoRepository<Delivery, String> {
     Optional<Delivery> findByDriverId(String driverId);
-    Optional<Delivery> findByDriverIdAndIsDeliveredFalse(String driverId);
-
+    Optional<Delivery> findByOrderId(String orderId);
+    Optional<Delivery> findByOrderIdAndUserId(String orderId, String userId);
 }

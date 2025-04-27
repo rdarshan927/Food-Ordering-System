@@ -20,6 +20,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/delivery/update-location").permitAll() // 👈 Public
                         .requestMatchers("/api/delivery/mark-delivered/**").permitAll()
                         .requestMatchers("/api/delivery/by-driver/**").permitAll()
+                        .requestMatchers("/api/delivery/by-order/**").permitAll()
                         .anyRequest().authenticated() // Others need auth
                 )
                 .httpBasic(Customizer.withDefaults()); // Or use JWT later

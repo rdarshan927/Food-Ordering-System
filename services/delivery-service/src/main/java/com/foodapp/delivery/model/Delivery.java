@@ -15,9 +15,21 @@ import org.springframework.data.mongodb.core.mapping.Document;
 public class Delivery {
     @Id
     private String id;
+
     private String orderId;
     private String driverId;
-    private double latitude;
-    private double longitude;
+    private String userId;
+
+    private double shopLatitude;
+    private double shopLongitude;
+
+    // Customer’s delivery destination
+    private double destinationLatitude;
+    private double destinationLongitude;
+
+    // Driver's current location
+    private double driverLatitude;
+    private double driverLongitude;
+
     private boolean isDelivered;
 }

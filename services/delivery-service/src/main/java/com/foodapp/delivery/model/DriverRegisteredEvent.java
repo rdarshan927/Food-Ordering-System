@@ -3,9 +3,8 @@ package com.foodapp.delivery.model;
 import lombok.Data;
 
 @Data
-public class LocationDTO {
+public class DriverRegisteredEvent {
     private String driverId;
-    private double latitude;
-    private double longitude;
+    private String name;
+    private String email;
 }
-
