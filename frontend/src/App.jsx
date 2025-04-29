@@ -9,6 +9,13 @@ import Login from "./pages/Authentication/Login.jsx";
 // Dashboard Pages
 import Dashboard from "./pages/Restaurant/Dashboard.jsx";
 import AdminDashboard from "./pages/Restaurant/AdminDashboard.jsx";
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+// import { PayPalScriptProvider } from "@paypal/react-paypal-js";
+import Checkout from "./pages/payment/Checkout.jsx"; 
+// import PayPalButton from "./components/PayPalButton.jsx"; 
+import AddPaymentMethod from "./components/AddPaymentMethod.jsx";
+import Header from "./components/Header";
+import Home from "./pages/Home";
 import DriverDashboard from "./pages/Delivery/DriverDashboard";
 import DriverDeliveryPage from "./pages/Delivery/DriverDeliveryPage";
 
@@ -82,10 +89,7 @@ const App = () => {
               
               {/* Payment Routes */}
               <Route path="/checkout" element={<Checkout />} />
-              <Route path="/add-payment" element={<AddPaymentMethod />} />
-              
-              {/* Catch unmatched routes */}
-              <Route path="*" element={<Navigate to="/" replace />} />
+              <Route path="add-payment" element={<AddPaymentMethod/>}/>
             </Routes>
           </main>
         </div>

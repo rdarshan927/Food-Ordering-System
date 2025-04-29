@@ -33,16 +33,18 @@ const CheckoutForm = () => {
 
             // Confirm the payment with Stripe
             const result = await stripe.confirmCardPayment(data.clientSecret, {
-                payment_method: { card: elements.getElement(CardElement) },
+                payment_method: {
+                    card: elements.getElement(CardElement),
+                },
             });
 
             if (result.error) {
                 setMessage(`Payment failed: ${result.error.message}`);
             } else {
-                setMessage("Payment successful! 🎉");
+                alert("Payment successful!");
             }
-        } catch (error) {
-            setMessage("An error occurred while processing payment.");
+        } catch {
+            alert("An error occurred while processing payment.");
         }
 
         setLoading(false);

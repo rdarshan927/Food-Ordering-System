@@ -1,0 +1,183 @@
+/* Overall form container */
+.payment-form {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 30px;
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+    font-family: 'Arial', sans-serif;
+  }
+  
+  /* Header styling */
+  h2 {
+    font-size: 28px;
+    color: #333;
+    margin-bottom: 20px;
+    text-align: center;
+    font-weight: 600;
+  }
+  
+  /* Radio buttons container */
+  .space-y-4 {
+    margin-bottom: 25px;
+  }
+  
+  /* Each radio button label */
+  label {
+    display: flex;
+    align-items: center;
+    font-size: 16px;
+    color: #333;
+    margin-bottom: 12px;
+    cursor: pointer;
+  }
+  
+  /* Styling for the radio buttons */
+  input[type="radio"] {
+    margin-right: 10px;
+    accent-color: #007bff;
+  }
+  
+  /* Card input field container */
+  .card-element {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 16px;
+    color: #333;
+    margin-top: 10px;
+  }
+  
+  /* Input field for voucher code */
+  .input-field {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 16px;
+    margin-right: 10px;
+    margin-bottom: 12px;
+    box-sizing: border-box;
+  }
+  
+  /* Button styles */
+  button {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 600;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+  }
+  
+  /* Apply button for voucher */
+  .btn-apply {
+    background-color: #4caf50;
+    color: #fff;
+    margin-top: 10px;
+    transition: background-color 0.3s ease;
+  }
+  
+  /* Button hover effect for Apply */
+  .btn-apply:hover {
+    background-color: #45a049;
+    transform: scale(1.05);
+  }
+  
+  /* Submit button for proceeding with payment */
+  .btn-submit {
+    background-color: #007bff;
+    color: white;
+    width: 100%;
+    padding: 14px;
+    border-radius: 8px;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  /* Disabled submit button */
+  .btn-submit:disabled {
+    background-color: #ddd;
+    cursor: not-allowed;
+  }
+  
+  /* Submit button hover effect */
+  .btn-submit:hover {
+    background-color: #0056b3;
+    transform: scale(1.05);
+  }
+  
+  /* Flex container for voucher code and apply button */
+  .flex {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    justify-content: space-between;
+  }
+  
+  /* Error or success messages */
+  .alert {
+    padding: 10px;
+    margin-top: 15px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+  }
+  
+  .alert.valid {
+    background-color: #d4edda;
+    color: #155724;
+  }
+  
+  .alert.invalid {
+    background-color: #f8d7da;
+    color: #721c24;
+  }
+  
+  .alert.expired {
+    background-color: #fff3cd;
+    color: #856404;
+  }
+  
+  /* Card input field and other form elements */
+  input[type="text"]:focus,
+  input[type="radio"]:focus,
+  input[type="submit"]:focus {
+    outline: none;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+    border-color: #007bff;
+  }
+  
+  /* General space between input fields and sections */
+  input,
+  select,
+  button {
+    margin-bottom: 15px;
+  }
+  
+  .form-section {
+    margin-bottom: 25px;
+  }
+  
+  /* Footer section (if any) */
+  .footer {
+    font-size: 14px;
+    color: #555;
+    text-align: center;
+    margin-top: 30px;
+  }
+  
+  .footer a {
+    color: #007bff;
+    text-decoration: none;
+  }
+  
+  .footer a:hover {
+    text-decoration: underline;
+  }
+  
