@@ -1,7 +1,7 @@
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
-import { PayPalScriptProvider } from "@paypal/react-paypal-js";
+// import { PayPalScriptProvider } from "@paypal/react-paypal-js";
 import Checkout from "./pages/payment/Checkout.jsx"; 
-import PayPalButton from "./components/PayPalButton.jsx"; 
+// import PayPalButton from "./components/PayPalButton.jsx"; 
 
 import Header from "./components/Header";
 import Home from "./pages/Home";
@@ -20,7 +20,7 @@ function App() {
   return (
     // Only one Router wrapping everything
     <Router>
-      <PayPalScriptProvider options={{ "client-id": "YOUR_PAYPAL_CLIENT_ID" }}>
+      {/* <PayPalScriptProvider options={{ "client-id": "YOUR_PAYPAL_CLIENT_ID" }}> */}
         <div className="min-h-screen flex flex-col">
           <Header />
           <main className="flex-grow">
@@ -36,7 +36,7 @@ function App() {
             </Routes>
           </main>
         </div>
-      </PayPalScriptProvider>
+      {/* </PayPalScriptProvider> */}
     </Router>
   );
 }
