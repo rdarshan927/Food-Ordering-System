@@ -15,7 +15,7 @@ const PaymentSuccess = () => {
           Thank you for your order. Your payment has been processed successfully.
         </p>
         <Link
-          to="/orders"
+          to="/order"
           className="inline-block bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700"
         >
           View Orders

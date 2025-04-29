@@ -342,7 +342,7 @@ const Register = ({ darkMode }) => {
         setTouched({});
         
         // Store token and restaurant info
-        localStorage.setItem("token", response.data.token);
+        localStorage.setItem("tokenr", response.data.token);
         localStorage.setItem("restaurant", JSON.stringify(response.data.restaurant));
         
         // Redirect to dashboard after successful registration

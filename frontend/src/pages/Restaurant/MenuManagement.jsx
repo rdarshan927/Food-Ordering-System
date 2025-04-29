@@ -33,7 +33,7 @@ const MenuManagement = () => {
 
       const response = await axios.get(`/api/restaurants/menu/${restaurantId}`, {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`
+          Authorization: `Bearer ${localStorage.getItem("tokenr")}`
         }
       });
       
@@ -97,7 +97,7 @@ const MenuManagement = () => {
           form, 
           {
             headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`
+              Authorization: `Bearer ${localStorage.getItem("tokenr")}`
               // Don't set Content-Type manually - axios will set it for FormData
             }
           }
@@ -112,7 +112,7 @@ const MenuManagement = () => {
           form, 
           {
             headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`
+              Authorization: `Bearer ${localStorage.getItem("tokenr")}`
               // Don't set Content-Type manually - axios will set it for FormData
             }
           }
@@ -152,7 +152,7 @@ const MenuManagement = () => {
       const restaurantId = getRestaurantId();
       await axios.delete(`/api/restaurants/menu/${restaurantId}/${itemId}`, {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`
+          Authorization: `Bearer ${localStorage.getItem("tokenr")}`
         }
       });
       

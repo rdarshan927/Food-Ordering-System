@@ -40,7 +40,7 @@ const Dashboard = () => {
       // Fetch restaurant details
       const restaurantResponse = await instance.get(`/api/restaurants/${storedRestaurant.id}`, {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`
+          Authorization: `Bearer ${localStorage.getItem("tokenr")}`
         }
       });
 
@@ -88,7 +88,7 @@ const Dashboard = () => {
         isOpen: newStatus
       }, {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`
+          Authorization: `Bearer ${localStorage.getItem("tokenr")}`
         }
       });
       
@@ -174,8 +174,8 @@ const Dashboard = () => {
           <button 
             className={styles.logoutButton}
             onClick={() => {
-              localStorage.removeItem('token');
-              localStorage.removeItem('restaurant');
+              localStorage.removeItem("tokenr");
+              localStorage.removeItem("restaurant");
               navigate('/login');
             }}
           >

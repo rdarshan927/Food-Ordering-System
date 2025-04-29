@@ -2,12 +2,14 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { jwtDecode } from "jwt-decode";
+import { useNavigate } from 'react-router-dom';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
   const [userId, setUserId] = useState('');
+  const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -19,6 +21,7 @@ const Login = () => {
       });
 
       const decoded = jwtDecode(res.data.token);
+      console.log("Decoded JWT:", decoded); // Optional: Debugging output
 
       localStorage.setItem("userId", decoded.id);
       localStorage.setItem("role", decoded.role);
@@ -30,6 +33,8 @@ const Login = () => {
 
       setUserId(decoded.id);
       setMessage('Login successful!');
+      navigate('/customer-dashboard'); // Redirect to customer dashboard
+
     } catch (err) {
       setMessage(err.response?.data?.message || 'Login failed');
     }

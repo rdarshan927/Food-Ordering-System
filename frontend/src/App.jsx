@@ -54,7 +54,7 @@ const App = () => {
   return (
     <Router>
       <AuthProvider>
-        <ErrorBoundary>
+        {/* <ErrorBoundary> */}
           <div className={`min-h-screen flex flex-col ${styles.appContainer} ${darkMode ? 'dark-mode' : ''}`}>
             <Header />
             <main className="flex-grow w-full">
@@ -82,7 +82,7 @@ const App = () => {
               </Routes>
             </main>
           </div>
-        </ErrorBoundary>
+        {/* </ErrorBoundary> */}
       </AuthProvider>
     </Router>
   );

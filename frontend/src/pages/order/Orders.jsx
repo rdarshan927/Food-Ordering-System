@@ -172,7 +172,7 @@ const Orders = () => {
                 </p>
                 <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                   <Link
-                    to="/restaurants"
+                    to="/customer-dashboard"
                     className="px-6 py-3 rounded-full bg-gradient-to-r from-indigo-500 to-teal-500 text-white hover:from-indigo-600 hover:to-teal-600 transition-all duration-300"
                   >
                     Browse Restaurants

@@ -34,10 +34,10 @@ const ProfileSettings = () => {
 
   useEffect(() => {
     // Check if user is logged in
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("tokenr");
     if (!token) {
-      navigate("/login");
-      return;
+        navigate("/login");
+        return;
     }
 
     // Set initial tab based on navigation state, only on initial mount if desired
@@ -60,7 +60,7 @@ const ProfileSettings = () => {
         // Use getRestaurantById instead of /me endpoint
         const response = await instance.get(`/api/restaurants/${storedRestaurant.id}`, {
           headers: {
-            Authorization: `Bearer ${token}`
+            Authorization: `Bearer ${localStorage.getItem("tokenr")}`
           }
         });
         
@@ -165,7 +165,7 @@ const ProfileSettings = () => {
       // Update restaurant profile using PUT with FormData
       const response = await instance.put(`/api/restaurants/${restaurantId}`, profileFormData, {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          Authorization: `Bearer ${localStorage.getItem("tokenr")}`,
           // Content-Type is set automatically by browser for FormData
         }
       });
@@ -208,12 +208,12 @@ const ProfileSettings = () => {
       
       await instance.delete(`/api/restaurants/${storedRestaurant.id}`, {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`
+          Authorization: `Bearer ${localStorage.getItem("tokenr")}`
         }
       });
       
       // Clear localStorage and redirect to login
-      localStorage.removeItem("token");
+      localStorage.removeItem("tokenr");
       localStorage.removeItem("restaurant");
       navigate("/login", { state: { message: "Your restaurant account has been deleted successfully." } });
       
@@ -235,7 +235,7 @@ const ProfileSettings = () => {
         },
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`
+            Authorization: `Bearer ${localStorage.getItem("tokenr")}`
           }
         }
       );

@@ -140,7 +140,7 @@ const Login = ({ darkMode }) => {
       if (isAdminLogin) {
         // Store admin token and info differently to distinguish from restaurant users
         localStorage.setItem("adminToken", response.data.token);
-        localStorage.setItem("adminUser", JSON.stringify(response.data.user));
+        localStorage.setItem("adminUse4r", JSON.stringify(response.data.user));
         
         setMessage("Admin login successful! Redirecting...");
         
@@ -149,8 +149,8 @@ const Login = ({ darkMode }) => {
           navigate("/admin/dashboard");
         }, 1500);
       } else {
-        // Regular restaurant login (your existing code)
-        localStorage.setItem("token", response.data.token);
+        // Regular restaurant login
+        localStorage.setItem("tokenr", response.data.token);
         localStorage.setItem("restaurant", JSON.stringify(response.data.restaurant));
         
         setMessage("Login successful! Redirecting...");
