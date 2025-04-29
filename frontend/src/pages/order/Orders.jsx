@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { useAuth } from '../../context/AuthContext';
 
 
 const Orders = () => {
+  const { isAuthenticated } = useAuth();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
@@ -28,8 +30,7 @@ const Orders = () => {
       const data = await orderService.getAllOrders();
       setOrders(data);
     } catch (err) {
-      console.error('Error fetching orders:', err);
-      setError('Failed to load orders. Please try again.');
+      setError(err.message);
     } finally {
       setLoading(false);
     }
@@ -37,12 +38,12 @@ const Orders = () => {
 
   const getStatusBadgeColor = (status) => {
     const colors = {
-      'Pending': 'bg-amber-200 text-amber-900',
-      'Accepted': 'bg-sky-200 text-sky-900',
-      'Preparing': 'bg-indigo-200 text-indigo-900',
-      'On the Way': 'bg-teal-200 text-teal-900',
-      'Delivered': 'bg-lime-200 text-lime-900',
-      'Cancelled': 'bg-rose-200 text-rose-900'
+    'Pending': 'bg-amber-200 text-amber-900',     // soft orange
+    'Accepted': 'bg-sky-200 text-sky-900',        // light blue
+    'Preparing': 'bg-indigo-200 text-indigo-900', // medium indigo
+    'On the Way': 'bg-teal-200 text-teal-900',    // calm teal
+    'Delivered': 'bg-lime-200 text-lime-900',     // fresh lime green
+    'Cancelled': 'bg-rose-200 text-rose-900'      // soft red
     };
     return colors[status] || 'bg-gray-100 text-gray-800';
   };
@@ -68,61 +69,58 @@ const Orders = () => {
       </div>
     );
   }
-
   return (
     <motion.div
       initial="initial"
       animate="animate"
       variants={pageAnimation}
-      className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 py-12"
+      className="min-h-screen bg-gradient-to-br from-indigo-50 to-teal-50 py-12"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
         <motion.div
           variants={itemAnimation}
           className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl overflow-hidden mb-8"
         >
-          <div className="relative h-48 bg-gradient-to-r from-orange-400 to-red-500">
+          <div className="relative h-48 bg-gradient-to-r from-indigo-500 to-teal-500">
             <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/50 to-transparent">
               <h1 className="text-4xl font-bold text-white">Your Orders</h1>
-              <p className="text-white/80 mt-2">Track and manage your orders easily</p>
+              <p className="text-white/80 mt-2">Track and manage your orders</p>
             </div>
           </div>
         </motion.div>
-
-        {/* Error Message */}
+  
         {error && (
           <motion.div
             variants={itemAnimation}
-            className="mb-8 p-4 bg-red-50 border border-red-200 text-red-600 rounded-xl"
+            className="mb-8 p-4 bg-rose-50 border border-rose-200 text-rose-600 rounded-xl"
           >
             {error}
           </motion.div>
         )}
-
-        {/* Filter Buttons */}
+  
         <motion.div
           variants={itemAnimation}
-          className="bg-white/80 backdrop-blur-sm rounded-xl shadow-lg p-6 mb-8 flex gap-4 justify-center"
+          className="bg-white/80 backdrop-blur-sm rounded-xl shadow-lg p-6 mb-8"
         >
-          {['all', 'active', 'completed'].map((filterType) => (
-            <motion.button
-              key={filterType}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => setFilter(filterType)}
-              className={`px-6 py-2 rounded-full text-sm font-medium ${
-                filter === filterType
-                  ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white'
-                  : 'bg-white text-gray-700 hover:bg-orange-50'
-              } transition-all duration-300 shadow-sm`}
-            >
-              {filterType.charAt(0).toUpperCase() + filterType.slice(1)}
-            </motion.button>
-          ))}
+          <div className="flex gap-4">
+            {['all', 'active', 'completed'].map((filterType) => (
+              <motion.button
+                key={filterType}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setFilter(filterType)}
+                className={`px-6 py-2 rounded-full text-sm font-medium ${
+                  filter === filterType
+                    ? 'bg-gradient-to-r from-indigo-500 to-teal-500 text-white'
+                    : 'bg-white text-gray-700 hover:bg-indigo-50'
+                } transition-all duration-300 shadow-sm`}
+              >
+                {filterType.charAt(0).toUpperCase() + filterType.slice(1)}
+              </motion.button>
+            ))}
+          </div>
         </motion.div>
-
-        {/* Orders List */}
+  
         <motion.div variants={itemAnimation} className="space-y-6">
           {filteredOrders.map((order) => (
             <motion.div
@@ -131,10 +129,10 @@ const Orders = () => {
               className="bg-white p-6 rounded-lg shadow-md transform hover:scale-105 transition-all duration-300 ease-in-out"
             >
               <div className="flex justify-between items-center">
-                <h3 className="text-lg font-semibold">Order #{order._id.slice(-6)}</h3>
+                <h3 className="text-lg font-semibold text-gray-900">Order #{order._id.slice(-6)}</h3>
                 <Link
                   to={`/tracking/${order._id}`}
-                  className="text-orange-500 hover:text-orange-600"
+                  className="text-indigo-500 hover:text-indigo-600"
                 >
                   Track Order →
                 </Link>
@@ -143,13 +141,12 @@ const Orders = () => {
                 <span
                   className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusBadgeColor(order.status)}`}
                 >
-                  {order.status}
+                  {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
                 </span>
               </div>
             </motion.div>
           ))}
-
-          {/* No Orders Message */}
+  
           {filteredOrders.length === 0 && (
             <motion.div
               variants={itemAnimation}
@@ -159,7 +156,7 @@ const Orders = () => {
                 <motion.div
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
-                  className="w-20 h-20 bg-orange-100 rounded-full flex items-center justify-center mb-4"
+                  className="w-20 h-20 bg-indigo-100 rounded-full flex items-center justify-center mb-4"
                 >
                   <span className="text-3xl">🍽️</span>
                 </motion.div>
@@ -176,7 +173,7 @@ const Orders = () => {
                 <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                   <Link
                     to="/restaurants"
-                    className="px-6 py-3 rounded-full bg-gradient-to-r from-orange-500 to-red-500 text-white hover:from-orange-600 hover:to-red-600 transition-all duration-300"
+                    className="px-6 py-3 rounded-full bg-gradient-to-r from-indigo-500 to-teal-500 text-white hover:from-indigo-600 hover:to-teal-600 transition-all duration-300"
                   >
                     Browse Restaurants
                   </Link>
