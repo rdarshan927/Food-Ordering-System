@@ -19,8 +19,8 @@ const Header = () => {
   };
 
   return (
-    <header className="bg-blue-600 text-white shadow-md">
-      <div className="max-w-7xl mx-auto px-4 py-4 flex sm:flex-row justify-between items-center gap-2">
+    <header className="bg-blue-600 text-white shadow-md w-full">
+      <div className="w-full px-4 py-4 flex sm:flex-row justify-between items-center gap-2">
         <h1 className="text-2xl font-semibold">🚀 Delivery App</h1>
         <nav className="flex flex-wrap justify-center sm:justify-end items-center gap-4 text-sm sm:text-base">
           <Link
