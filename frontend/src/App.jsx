@@ -21,9 +21,9 @@ function App() {
     // Only one Router wrapping everything
     <Router>
       {/* <PayPalScriptProvider options={{ "client-id": "YOUR_PAYPAL_CLIENT_ID" }}> */}
-        <div className="min-h-screen flex flex-col">
+        <div className="min-h-screen w-full flex flex-col">
           <Header />
-          <main className="flex-grow">
+          <main className="flex-grow w-full">
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/driverdashboard" element={<DriverDashboard />} />
