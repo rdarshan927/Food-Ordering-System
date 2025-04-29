@@ -1,37 +1,3 @@
-//package com.foodapp.delivery.service;
-//
-//import com.foodapp.delivery.model.Delivery;
-//import com.foodapp.delivery.model.LocationDTO;
-//import com.foodapp.delivery.repository.DeliveryRepository;
-//import lombok.RequiredArgsConstructor;
-//import org.springframework.stereotype.Service;
-//
-//@Service
-//@RequiredArgsConstructor
-//public class DeliveryService {
-//    private final DeliveryRepository deliveryRepo;
-//
-//    public void createDelivery(Delivery delivery) {
-//        deliveryRepo.save(delivery);
-//    }
-//
-//    public void updateLocation(LocationDTO location) {
-//        Delivery delivery = deliveryRepo.findByDriverId(location.getDriverId())
-//                .orElseThrow(() -> new RuntimeException("Driver not assigned to any delivery!"));
-//        delivery.setLatitude(location.getLatitude());
-//        delivery.setLongitude(location.getLongitude());
-//        deliveryRepo.save(delivery);
-//    }
-//
-//    public void markAsDelivered(String driverId) {
-//        Delivery delivery = deliveryRepo.findByDriverId(driverId)
-//                .orElseThrow(() -> new RuntimeException("No delivery found for driver"));
-//        delivery.setDelivered(true);
-//        deliveryRepo.save(delivery);
-//    }
-//
-//}
-
 package com.foodapp.delivery.service;
 
 import com.foodapp.delivery.model.CompletedDelivery;
@@ -52,42 +18,28 @@ import java.util.List;
 public class DeliveryService {
     private final DeliveryRepository deliveryRepo;
     private final DriverLocationRepository driverLocationRepo;
-    private final CompletedDeliveryRepository completedDeliveryRepo; // 👈 add this
+    private final CompletedDeliveryRepository completedDeliveryRepo;
 
-//    public void updateLocation(LocationDTO location) {
-//        // Always update driver location
-//        DriverLocation driverLoc = driverLocationRepo.findById(location.getDriverId())
-//                .orElse(new DriverLocation(location.getDriverId(), location.getLatitude(), location.getLongitude(), true));
-//        driverLoc.setLatitude(location.getLatitude());
-//        driverLoc.setLongitude(location.getLongitude());
-//        driverLocationRepo.save(driverLoc);
-//
-//        // If driver is currently delivering, update delivery too
-//        deliveryRepo.findByDriverId(location.getDriverId()).ifPresent(delivery -> {
-//            delivery.setLatitude(location.getLatitude());
-//            delivery.setLongitude(location.getLongitude());
-//            deliveryRepo.save(delivery);
-//        });
-//    }
     public void updateLocation(LocationDTO location) {
-        // Update driver location (separate from delivery)
+        // Always update driver location
         DriverLocation driverLoc = driverLocationRepo.findById(location.getDriverId())
                 .orElse(new DriverLocation(location.getDriverId(), location.getLatitude(), location.getLongitude(), true));
-
         driverLoc.setLatitude(location.getLatitude());
         driverLoc.setLongitude(location.getLongitude());
         driverLocationRepo.save(driverLoc);
 
-        // ✅ Update only the *active* delivery (not completed ones)
-        deliveryRepo.findByDriverIdAndIsDeliveredFalse(location.getDriverId())
-                .ifPresent(delivery -> {
-                    delivery.setLatitude(location.getLatitude());
-                    delivery.setLongitude(location.getLongitude());
-                    deliveryRepo.save(delivery);
-                });
+        // If driver is currently delivering, update delivery's driver coordinates
+        deliveryRepo.findByDriverId(location.getDriverId()).ifPresent(delivery -> {
+            delivery.setDriverLatitude(location.getLatitude());
+            delivery.setDriverLongitude(location.getLongitude());
+            deliveryRepo.save(delivery);
+        });
     }
 
-    public void createDelivery(String orderId, double lat, double lon) {
+    public void createDelivery(String orderId, String userId, double shopLat, double shopLon, double customerLat, double customerLon) {
+        if (userId == null || userId.isEmpty()) {
+            throw new RuntimeException("User ID is required");
+        }
         List<DriverLocation> availableDrivers = driverLocationRepo.findByIsAvailableTrue();
 
         if (availableDrivers.isEmpty()) throw new RuntimeException("No available drivers!");
@@ -96,7 +48,7 @@ public class DeliveryService {
         double minDist = Double.MAX_VALUE;
 
         for (DriverLocation d : availableDrivers) {
-            double dist = calculateDistance(lat, lon, d.getLatitude(), d.getLongitude());
+            double dist = calculateDistance(shopLat, shopLon, d.getLatitude(), d.getLongitude());
             if (dist < minDist) {
                 minDist = dist;
                 nearest = d;
@@ -104,7 +56,11 @@ public class DeliveryService {
         }
 
         if (nearest != null) {
-            Delivery delivery = new Delivery(null, orderId, nearest.getDriverId(), lat, lon, false);
+            Delivery delivery = new Delivery(null, orderId, nearest.getDriverId(), userId,
+                    customerLat, customerLon, // destination
+                    nearest.getLatitude(), nearest.getLongitude(), // initial driver location
+                    shopLat, shopLon, // shop location
+                    false);
             deliveryRepo.save(delivery);
 
             nearest.setAvailable(false);
@@ -112,43 +68,31 @@ public class DeliveryService {
         }
     }
 
-//    public void markAsDelivered(String driverId) {
-//        Delivery delivery = deliveryRepo.findByDriverId(driverId)
-//                .orElseThrow(() -> new RuntimeException("No delivery assigned to this driver"));
-//        delivery.setDelivered(true);
-//        deliveryRepo.save(delivery);
-//
-//        driverLocationRepo.findById(driverId).ifPresent(driver -> {
-//            driver.setAvailable(true);
-//            driverLocationRepo.save(driver);
-//        });
-//    }
-public void markAsDelivered(String driverId) {
-    Delivery delivery = deliveryRepo.findByDriverId(driverId)
-            .orElseThrow(() -> new RuntimeException("No delivery assigned to this driver"));
+    public void markAsDelivered(String driverId) {
+        Delivery delivery = deliveryRepo.findByDriverId(driverId)
+                .orElseThrow(() -> new RuntimeException("No delivery assigned to this driver"));
 
-    // Archive to completed_deliveries
-    CompletedDelivery completed = new CompletedDelivery(
-            delivery.getId(),
-            delivery.getOrderId(),
-            delivery.getDriverId(),
-            delivery.getLatitude(),
-            delivery.getLongitude(),
-            true,
-            LocalDateTime.now()
-    );
-    completedDeliveryRepo.save(completed);
+        // Archive to completed_deliveries
+        CompletedDelivery completed = new CompletedDelivery(
+                delivery.getId(),
+                delivery.getOrderId(),
+                delivery.getDriverId(),
+                delivery.getDestinationLatitude(),
+                delivery.getDestinationLongitude(),
+                true,
+                LocalDateTime.now()
+        );
+        completedDeliveryRepo.save(completed);
 
-    // Remove from active deliveries
-    deliveryRepo.delete(delivery);
+        // Remove from active deliveries
+        deliveryRepo.delete(delivery);
 
-    // Mark driver as available again
-    driverLocationRepo.findById(driverId).ifPresent(driver -> {
-        driver.setAvailable(true);
-        driverLocationRepo.save(driver);
-    });
-}
-
+        // Mark driver as available again
+        driverLocationRepo.findById(driverId).ifPresent(driver -> {
+            driver.setAvailable(true);
+            driverLocationRepo.save(driver);
+        });
+    }
 
     private double calculateDistance(double lat1, double lon1, double lat2, double lon2) {
         final int R = 6371;
@@ -161,13 +105,27 @@ public void markAsDelivered(String driverId) {
         return R * c;
     }
 
-//    public Delivery getDeliveryByDriver(String driverId) {
-//        return deliveryRepo.findByDriverId(driverId)
-//                .orElseThrow(() -> new RuntimeException("No delivery assigned to this driver"));
-//    }
     public Delivery getDeliveryByDriver(String driverId) {
-        return deliveryRepo.findByDriverIdAndIsDeliveredFalse(driverId)
-                .orElseThrow(() -> new RuntimeException("No active delivery assigned to this driver"));
+        if (driverId == null || driverId.isEmpty()) {
+            throw new RuntimeException("User ID is required");
+        }
+
+        return deliveryRepo.findByDriverId(driverId)
+                .orElseThrow(() -> new RuntimeException("No active delivery assigned to this driver" + driverId));
+    }
+
+    public Delivery getDeliveryByOrderId(String orderId, String userId) {
+        if (userId == null || userId.isEmpty()) {
+            if (orderId == null || orderId.isEmpty()) {
+                throw new RuntimeException("Order ID is required");
+            }
+            throw new RuntimeException("User ID is required");
+        }
+//        return deliveryRepo.findByOrderId(orderId)
+//                .orElseThrow(() -> new RuntimeException("No delivery found for this order"));
+        return deliveryRepo.findByOrderIdAndUserId(orderId, userId)
+                .orElseThrow(() -> new RuntimeException("No delivery found for this order and user"));
+
     }
 
 }
