@@ -1,13 +1,22 @@
-// routes/voucherRoutes.js
+// Routes: voucherRoutes.js
 const express = require('express');
 const router = express.Router();
-const voucherController = require('../Controllers/VoucherController');
+const VoucherController = require('../Controllers/VoucherController');
 
 // Routes
-router.post('/', voucherController.addVoucher); // Add new voucher
-router.get('/', voucherController.getAllVouchers); // Get all vouchers
-router.get('/:code', voucherController.getVoucherByCode); // Get voucher by code
-router.put('/:id', voucherController.updateVoucher); // Update voucher
-router.delete('/:id', voucherController.deleteVoucher); // Delete voucher
+// POST route to create a voucher
+router.post('/', VoucherController.createVoucher);
+
+// GET all vouchers
+router.get('/vouchers', VoucherController.getAllVouchers);
+
+// GET voucher by code
+router.get('/vouchers/:code', VoucherController.getVoucherByCode);
+
+// PUT route to update a voucher
+router.put('/vouchers/:id', VoucherController.updateVoucher);
+
+// DELETE route to delete a voucher
+router.delete('/vouchers/:id', VoucherController.deleteVoucher);
 
 module.exports = router;

@@ -1,6 +1,10 @@
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import Order from "./pages/order/Orders.jsx";
 import CartPage from "./pages/cart/CartPage.jsx";
+// import { PayPalScriptProvider } from "@paypal/react-paypal-js";
+import Checkout from "./pages/payment/Checkout.jsx"; 
+// import PayPalButton from "./components/PayPalButton.jsx"; 
+import AddPaymentMethod from "./components/AddPaymentMethod.jsx";
 import Header from "./components/Header";
 import Home from "./pages/Home";
 import DriverDashboard from "./pages/Delivery/DriverDashboard";
