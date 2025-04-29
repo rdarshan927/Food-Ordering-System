@@ -1,5 +1,5 @@
 /* General Page Styling */
-body {
+/* body {
     font-family: "Poppins", sans-serif;
     background-color: #f5f7fa;
     display: flex;
@@ -7,7 +7,7 @@ body {
     align-items: center;
     height: 100vh;
     margin: 0;
-}
+} */
 
 /* Payment Container */
 .payment-container {
