@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from "../services/axios";
+import axios from "../../services/axios";
 import styles from './AdminDashboard.module.css';
 
 const AdminDashboard = () => {

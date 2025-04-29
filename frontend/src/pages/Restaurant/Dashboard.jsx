@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import axios from "../services/axios";
+import {instance} from "../../services/api";
 import styles from './Dashboard.module.css';
 
 const Dashboard = () => {
@@ -38,14 +38,14 @@ const Dashboard = () => {
       }
 
       // Fetch restaurant details
-      const restaurantResponse = await axios.get(`/api/restaurants/${storedRestaurant.id}`, {
+      const restaurantResponse = await instance.get(`/api/restaurants/${storedRestaurant.id}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`
         }
       });
 
       // Fetch menu items
-      const menuResponse = await axios.get(`/api/restaurants/menu/${storedRestaurant.id}`, {
+      const menuResponse = await instance.get(`/api/restaurants/menu/${storedRestaurant.id}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`
         }
@@ -83,7 +83,7 @@ const Dashboard = () => {
       const newStatus = !restaurantData.isOpen;
       
       // Call API to update restaurant status
-      await axios.post("/api/restaurants/availability", {
+      await instance.post("/api/restaurants/availability", {
         restaurantId: restaurantData._id,
         isOpen: newStatus
       }, {

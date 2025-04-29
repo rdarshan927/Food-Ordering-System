@@ -1,6 +1,6 @@
 // src/pages/MenuManagement.jsx
 import React, { useState, useEffect } from "react";
-import axios from "../services/axios";
+import axios from "../../services/axios";
 import styles from "./MenuManagement.module.css";
 
 const MenuManagement = () => {
@@ -106,6 +106,7 @@ const MenuManagement = () => {
         setMessage("Menu item updated successfully");
       } else {
         // Add new item
+        console.log("hello");
         response = await axios.post(
           "/api/restaurants/menu", 
           form, 

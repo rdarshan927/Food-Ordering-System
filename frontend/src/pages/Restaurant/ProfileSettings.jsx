@@ -1,7 +1,7 @@
 // src/pages/ProfileSettings.jsx
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom"; // Import useLocation
-import axios from "../services/axios";
+import { instance } from "../../services/api";
 import styles from "./ProfileSettings.module.css";
 
 const ProfileSettings = () => {
@@ -58,7 +58,7 @@ const ProfileSettings = () => {
         }
 
         // Use getRestaurantById instead of /me endpoint
-        const response = await axios.get(`/api/restaurants/${storedRestaurant.id}`, {
+        const response = await instance.get(`/api/restaurants/${storedRestaurant.id}`, {
           headers: {
             Authorization: `Bearer ${token}`
           }
@@ -163,7 +163,7 @@ const ProfileSettings = () => {
       }
 
       // Update restaurant profile using PUT with FormData
-      const response = await axios.put(`/api/restaurants/${restaurantId}`, profileFormData, {
+      const response = await instance.put(`/api/restaurants/${restaurantId}`, profileFormData, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
           // Content-Type is set automatically by browser for FormData
@@ -206,7 +206,7 @@ const ProfileSettings = () => {
         throw new Error("Restaurant information not found");
       }
       
-      await axios.delete(`/api/restaurants/${storedRestaurant.id}`, {
+      await instance.delete(`/api/restaurants/${storedRestaurant.id}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`
         }
@@ -228,7 +228,7 @@ const ProfileSettings = () => {
     try {
       const newStatus = !restaurant.isOpen;
       
-      await axios.post("/api/restaurants/availability", 
+      await instance.post("/api/restaurants/availability", 
         { 
           restaurantId: restaurant._id,
           isOpen: newStatus

@@ -1,9 +1,23 @@
 const Restaurant = require("../models/Restaurant");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const multer = require("multer");
+const path = require("path");
+
+// Configure multer for file uploads
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "uploads/"); // Save files to the "uploads" folder
+  },
+  filename: (req, file, cb) => {
+    cb(null, `${Date.now()}-${file.originalname}`);
+  },
+});
+
+const upload = multer({ storage });
 
 // Register a new restaurant
-exports.registerRestaurant = async (req, res) => {
+const registerRestaurantHandler = async (req, res) => {
   try {
     const {
       name,
@@ -13,90 +27,131 @@ exports.registerRestaurant = async (req, res) => {
       telephoneNumber,
       location,
       cuisine,
-      logo,
-      coverImage
     } = req.body;
 
-    // Check if restaurant already exists with this email
+    // Check if restaurant already exists
     const existingRestaurant = await Restaurant.findOne({ email });
     if (existingRestaurant) {
-      return res.status(400).json({ message: "Restaurant with this email already exists" });
+      return res.status(400).json({ message: "Restaurant already exists" });
     }
 
-    // Hash the password
+    // Hash password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Create new restaurant
+    // Create restaurant
     const restaurant = new Restaurant({
       name,
       description,
       email,
       password: hashedPassword,
       telephoneNumber,
-      location,
-      cuisine: cuisine || [],
-      logo,
-      coverImage
+      location: JSON.parse(location),
+      cuisine: cuisine ? cuisine.split(",") : [],
+      logo: req.files?.logo?.[0]?.path,
+      coverImage: req.files?.coverImage?.[0]?.path,
     });
 
     await restaurant.save();
 
-    // Generate token for auto login
+    // Generate JWT token
     const token = jwt.sign({ id: restaurant._id }, process.env.JWT_SECRET, {
-      expiresIn: "7d"
+      expiresIn: "30d",
     });
 
     res.status(201).json({
-      message: "Restaurant registered successfully. Awaiting verification.",
+      message: "Restaurant registered successfully",
+      token,
       restaurant: {
         id: restaurant._id,
         name: restaurant.name,
         email: restaurant.email,
-        isVerified: restaurant.isVerified
       },
-      token
     });
   } catch (error) {
     console.error("Registration error:", error);
-    res.status(500).json({ message: "Registration failed", error: error.message });
+    res.status(500).json({ 
+      message: "Registration failed", 
+      error: error.message 
+    });
   }
 };
+
+// Export the middleware array
+exports.registerRestaurant = [
+  upload.fields([
+    { name: "logo", maxCount: 1 },
+    { name: "coverImage", maxCount: 1 },
+  ]),
+  registerRestaurantHandler
+];
 
 // Login restaurant
 exports.loginRestaurant = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // Find restaurant
     const restaurant = await Restaurant.findOne({ email });
     if (!restaurant) {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
-    // Verify password
     const isMatch = await bcrypt.compare(password, restaurant.password);
     if (!isMatch) {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
-    // Generate token
     const token = jwt.sign({ id: restaurant._id }, process.env.JWT_SECRET, {
-      expiresIn: "7d"
+      expiresIn: "30d",
     });
 
-    res.status(200).json({
-      message: "Login successful",
+    res.json({
+      token,
       restaurant: {
         id: restaurant._id,
         name: restaurant.name,
         email: restaurant.email,
-        isVerified: restaurant.isVerified
       },
-      token
     });
   } catch (error) {
     res.status(500).json({ message: "Login failed", error: error.message });
+  }
+};
+
+// Admin login
+exports.loginAdmin = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    // Hardcoded admin credentials
+    const adminEmail = "admin@admin.com";
+    const adminPassword = "admin123";
+
+    if (email === adminEmail && password === adminPassword) {
+      // Generate admin token with role claim
+      const token = jwt.sign(
+        { 
+          role: "admin"
+        }, 
+        process.env.JWT_SECRET, 
+        { expiresIn: "7d" }
+      );
+
+      return res.status(200).json({
+        message: "Admin login successful",
+        token,
+        user: {
+          email: adminEmail,
+          role: "admin"
+        }
+      });
+    }
+
+    // If credentials don't match
+    return res.status(401).json({ message: "Invalid admin credentials" });
+  } catch (error) {
+    console.error("Admin login error:", error);
+    res.status(500).json({ message: "Admin login failed", error: error.message });
   }
 };
 

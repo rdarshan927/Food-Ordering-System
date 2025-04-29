@@ -40,3 +40,19 @@ exports.viewTransactions = async (req, res) => {
     res.status(500).json({ message: "Server error", error });
   }
 };
+
+// Add this function to your exports
+exports.deleteRestaurantById = async (req, res) => {
+  try {
+    const { restaurantId } = req.params;
+
+    const restaurant = await Restaurant.findById(restaurantId);
+    if (!restaurant) return res.status(404).json({ message: "Restaurant not found" });
+
+    await Restaurant.findByIdAndDelete(restaurantId);
+
+    res.json({ message: "Restaurant deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};

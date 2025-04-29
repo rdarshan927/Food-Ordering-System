@@ -3,17 +3,37 @@ const Restaurant = require("../models/Restaurant");
 // Add a new menu item
 exports.addMenuItem = async (req, res) => {
   try {
-    const { restaurantId, name, price, description, image } = req.body;
+    const { restaurantId, name, price, description } = req.body;
     const restaurant = await Restaurant.findById(restaurantId);
 
     if (!restaurant) return res.status(404).json({ message: "Restaurant not found" });
 
-    restaurant.menu.push({ name, price, description, image });
+    // Create the new menu item
+    const menuItem = {
+      name, 
+      price: parseFloat(price), 
+      description: description || ""
+    };
+
+    // Handle image if it exists
+    if (req.file) {
+      console.log("File uploaded:", req.file);
+      menuItem.image = req.file.path;
+    }
+
+    restaurant.menu.push(menuItem);
     await restaurant.save();
 
-    res.status(201).json({ message: "Menu item added successfully", menu: restaurant.menu });
+    res.status(201).json({ 
+      message: "Menu item added successfully", 
+      menuItem: restaurant.menu[restaurant.menu.length - 1] 
+    });
   } catch (error) {
-    res.status(500).json({ message: "Server error", error });
+    console.error("Error adding menu item:", error);
+    res.status(500).json({ 
+      message: "Server error", 
+      error: error.message 
+    });
   }
 };
 
@@ -21,7 +41,7 @@ exports.addMenuItem = async (req, res) => {
 exports.updateMenuItem = async (req, res) => {
   try {
     const { restaurantId, itemId } = req.params;
-    const { name, price, description, image } = req.body;
+    const { name, price, description } = req.body;
 
     const restaurant = await Restaurant.findById(restaurantId);
     if (!restaurant) return res.status(404).json({ message: "Restaurant not found" });
@@ -31,14 +51,22 @@ exports.updateMenuItem = async (req, res) => {
 
     // Update fields
     if (name) item.name = name;
-    if (price) item.price = price;
-    if (description) item.description = description;
-    if (image) item.image = image;
+    if (price) item.price = parseFloat(price);
+    if (description !== undefined) item.description = description;
+    
+    // Handle uploaded image if it exists
+    if (req.file) {
+      item.image = req.file.path;
+    }
 
     await restaurant.save();
-    res.json({ message: "Menu item updated successfully", menu: restaurant.menu });
+    res.json({ 
+      message: "Menu item updated successfully", 
+      menuItem: item 
+    });
   } catch (error) {
-    res.status(500).json({ message: "Server error", error });
+    console.error("Error updating menu item:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 };
 
@@ -122,7 +150,8 @@ exports.viewOrders = async (req, res) => {
 exports.updateRestaurantProfile = async (req, res) => {
   try {
     const { restaurantId } = req.params;
-    const { name, description, telephoneNumber, location } = req.body;
+    // Get text fields from req.body
+    const { name, description, telephoneNumber, location, cuisine } = req.body; 
 
     const restaurant = await Restaurant.findById(restaurantId);
     if (!restaurant) return res.status(404).json({ message: "Restaurant not found" });
@@ -131,12 +160,35 @@ exports.updateRestaurantProfile = async (req, res) => {
     if (name) restaurant.name = name;
     if (description) restaurant.description = description;
     if (telephoneNumber) restaurant.telephoneNumber = telephoneNumber;
-    if (location) restaurant.location = location;
+    
+    // Parse location if it's a string (might come from FormData)
+    if (location) {
+      try {
+        restaurant.location = typeof location === 'string' ? JSON.parse(location) : location;
+      } catch (parseError) {
+        console.error("Error parsing location:", parseError);
+        // Handle error or ignore if parsing fails
+      }
+    }
+    
+    // Parse cuisine if it's a string
+    if (cuisine) {
+       restaurant.cuisine = typeof cuisine === 'string' ? cuisine.split(",").map(item => item.trim()).filter(item => item !== "") : cuisine;
+    }
+
+    // Get file paths from req.files if they exist
+    if (req.files?.logo?.[0]) {
+      restaurant.logo = req.files.logo[0].path;
+    }
+    if (req.files?.coverImage?.[0]) {
+      restaurant.coverImage = req.files.coverImage[0].path;
+    }
 
     await restaurant.save();
     res.json({ message: "Restaurant profile updated successfully", restaurant });
   } catch (error) {
-    res.status(500).json({ message: "Server error", error });
+    console.error("Error updating profile:", error); // Log the error
+    res.status(500).json({ message: "Server error updating profile", error: error.message });
   }
 };
 
