@@ -1,16 +1,14 @@
 const mongoose = require('mongoose');
-const UserModel = require('../models/userModel');
 const CartModel = require('../models/cartModel');
+
 // 📦 Create Cart Entry
 const createCart = async (req, res) => {
     try {
+        console.log('hi');
         const { productID, name, price, imageData } = req.body;
-        const userEmail = req.params.id;
+        const userEmail = req.params.userEmail; // ✅ (not req.params.id)
 
-        if (!userEmail) return res.status(401).json({ message: 'Login first!' });
-
-        const user = await UserModel.findOne({ email: userEmail });
-        if (!user) return res.status(401).json({ message: 'Login first!' });
+        console.log(req.body, userEmail, "hello");
 
         const alreadyExist = await CartModel.findOne({ productID, userEmail });
 
@@ -38,7 +36,7 @@ const createCart = async (req, res) => {
 
 // 🛒 Get All Cart Items for a User
 const getCart = async (req, res) => {
-    const userEmail = req.params.id;
+    const userEmail = req.params.userEmail; // Using userEmail instead of userId
 
     try {
         const carts = await CartModel.find({ userEmail });
@@ -46,19 +44,6 @@ const getCart = async (req, res) => {
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Error fetching cart items.' });
-    }
-};
-
-// 📍 Get Delivery Details for a User
-const getDelivery = async (req, res) => {
-    const userEmail = req.params.id;
-
-    try {
-        const delivery = await UserModel.findOne({ email: userEmail }).select('deliveryAddress receiverPhoneNumber');
-        res.status(200).json(delivery);
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Error fetching delivery details.' });
     }
 };
 
@@ -122,26 +107,62 @@ const deleteCart = async (req, res) => {
     }
 };
 
-// 🚚 Update Delivery Info
+// 🚚 Get Delivery Info
+const getDelivery = async (req, res) => {
+    const userEmail = req.params.userEmail;
+
+    try {
+        const cart = await CartModel.findOne({ userEmail });
+        if (!cart) {
+            return res.status(200).json({
+                receiverPhoneNumber: "No phone number set",
+                deliveryAddress: "No address set"
+            });
+        }
+        res.status(200).json({
+            receiverPhoneNumber: cart.receiverPhoneNumber || "No phone number set",
+            deliveryAddress: cart.deliveryAddress || "No address set"
+        });
+    } catch (error) {
+        console.error('Error fetching delivery info:', error);
+        res.status(500).json({ message: 'Error fetching delivery information' });
+    }
+};
+
 const updateDelivery = async (req, res) => {
-    const email = req.params.id;
+    const userEmail = req.params.userEmail;
     const { receiverPhoneNumber, deliveryAddress } = req.body;
 
     try {
-        const updated = await UserModel.findOneAndUpdate(
-            { email },
-            { receiverPhoneNumber, deliveryAddress },
-            { new: true }
+        const result = await CartModel.updateMany(
+            { userEmail },
+            { 
+                $set: { 
+                    receiverPhoneNumber, 
+                    deliveryAddress,
+                    updatedAt: new Date()
+                } 
+            }
         );
 
-        if (!updated) {
-            return res.status(404).json({ message: 'User not found' });
+        if (result.matchedCount === 0) {
+            // If no cart exists, create a new one with delivery details
+            const newCart = new CartModel({
+                userEmail,
+                receiverPhoneNumber,
+                deliveryAddress
+            });
+            await newCart.save();
         }
 
-        res.status(200).json(updated);
+        res.status(200).json({ 
+            message: 'Delivery information updated successfully',
+            receiverPhoneNumber,
+            deliveryAddress
+        });
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Error updating delivery info' });
+        console.error('Error updating delivery info:', error);
+        res.status(500).json({ message: 'Error updating delivery information' });
     }
 };
 
@@ -151,6 +172,6 @@ module.exports = {
     getSingleCart,
     updateCart,
     deleteCart,
-    getDelivery,
-    updateDelivery,
+    getDelivery,    // Add this
+    updateDelivery
 };

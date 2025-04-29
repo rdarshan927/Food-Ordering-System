@@ -4,19 +4,48 @@ const Order = require("../models/Order");
 exports.createOrder = async (req, res) => {
     try {
         const { customerId, restaurantId, items, totalAmount, status, paymentMethod, deliveryAddress } = req.body;
-        console.log("Incoming order payload:", req.body);
+        
+        console.log('Received order data:', JSON.stringify(req.body, null, 2));
 
         // Validate required fields
         if (!customerId || !restaurantId || !items || !totalAmount || !paymentMethod || !deliveryAddress) {
-            return res.status(400).json({ 
+            console.log('Missing required fields:', {
+                customerId: !!customerId,
+                restaurantId: !!restaurantId,
+                items: !!items,
+                totalAmount: !!totalAmount,
+                paymentMethod: !!paymentMethod,
+                deliveryAddress: !!deliveryAddress
+            });
+            
+            return res.status(400).json({
                 error: 'Missing required fields',
-                required: ['customerId', 'restaurantId', 'items', 'totalAmount', 'paymentMethod', 'deliveryAddress']
+                required: ['customerId', 'restaurantId', 'items', 'totalAmount', 'paymentMethod', 'deliveryAddress'],
+                received: {
+                    customerId,
+                    restaurantId,
+                    items: Array.isArray(items) ? `${items.length} items` : typeof items,
+                    totalAmount,
+                    paymentMethod,
+                    deliveryAddress
+                }
             });
         }
 
-        // Validate items array
-        if (!Array.isArray(items) || items.length === 0) {
-            return res.status(400).json({ error: 'Items must be a non-empty array' });
+        // Validate items structure
+        if (!Array.isArray(items) || !items.every(item => 
+            item.name && 
+            typeof item.price === 'number' && 
+            typeof item.quantity === 'number')) {
+            return res.status(400).json({
+                error: 'Invalid items structure',
+                required: {
+                    name: 'string',
+                    price: 'number',
+                    quantity: 'number'
+                },
+                received: items
+            });
         }
 
         const newOrder = new Order({
@@ -24,19 +53,20 @@ exports.createOrder = async (req, res) => {
             restaurantId,
             items,
             totalAmount,
-            paymentMethod,    
-            deliveryAddress,  
-            status: status || 'Pending', // <-- use status from body if given, else 'Pending'
-          });
-          
+            paymentMethod,
+            deliveryAddress,
+            status: status || 'Pending'
+        });
 
         const savedOrder = await newOrder.save();
+        console.log('Order saved successfully:', savedOrder._id);
         res.status(201).json(savedOrder);
     } catch (error) {
-        console.error("Error creating order:", error);
-        res.status(500).json({ 
+        console.error('Order creation error:', error);
+        res.status(500).json({
             error: 'Failed to create order',
-            details: error.message 
+            message: error.message,
+            details: process.env.NODE_ENV === 'development' ? error.stack : undefined
         });
     }
 };

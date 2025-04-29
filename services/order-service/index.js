@@ -4,6 +4,7 @@
     const connectDB = require("./config/db.js");
     const orderRoutes = require("./routes/ordersRoutes.js");
     const mongoose = require("mongoose");
+    const cartRoutes = require("./routes/cartRoute.js");
    
     dotenv.config();
     const app = express();
@@ -14,7 +15,7 @@
 
     // Routes
     app.use("/api/orders", orderRoutes);
-    app.use("/api/cart", orderRoutes);
+    app.use("/api/cart", cartRoutes);
    
     
 
