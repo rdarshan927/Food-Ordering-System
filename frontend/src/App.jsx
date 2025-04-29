@@ -11,7 +11,6 @@ import DriverDashboard from "./pages/Delivery/DriverDashboard";
 import DriverDeliveryPage from "./pages/Delivery/DriverDeliveryPage";
 import Login from "./pages/Authentication/Login";
 import Register from "./pages/Authentication/Register";
-import Checkout from "./pages/payment/Checkout.jsx";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { useParams } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
@@ -26,9 +25,9 @@ function App() {
     <Router>
       <AuthProvider>
         <ErrorBoundary>
-          <div className="min-h-screen flex flex-col">
+          <div className="min-h-screen w-full flex flex-col">
             <Header />
-            <main className="flex-grow">
+            <main className="flex-grow w-full">
               <Routes>
                 <Route path="/" element={<Home />} />
                 <Route path="/driverdashboard" element={<DriverDashboard />} />
