@@ -12,47 +12,79 @@ const PaymentOptions = () => {
 
   const [selectedMethod, setSelectedMethod] = useState("");
   const [voucherCode, setVoucherCode] = useState("");
-  const [voucherStatus, setVoucherStatus] = useState(null);
+  const [expirationDate, setExpirationDate] = useState("");
   const [loading, setLoading] = useState(false);
+  const [voucherApplied, setVoucherApplied] = useState(false);
+  const [voucherMessage, setVoucherMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
 
   const handleVoucherCheck = async () => {
-    try {
-      const response = await axios.get(`http://localhost:5056/api/vouchers/${voucherCode}`);
-      const now = new Date();
-      const expiry = new Date(response.data.expirationDate);
+    if (voucherCode && expirationDate) {
+      try {
+        const orderData = {
+          code: voucherCode,
+          expirationDate: expirationDate,
+        };
+        // Post voucher details to the backend
+        const response = await axios.post("http://localhost:5056/api/vouchers", orderData);
 
-      if (expiry > now) {
-        setVoucherStatus("valid");
-        alert("Voucher applied!");
-      } else {
-        setVoucherStatus("expired");
-        alert("Voucher has expired.");
+        if (response.status === 201) {
+          setVoucherApplied(true);
+          setVoucherMessage("Voucher applied successfully!");
+        } else {
+          setVoucherMessage("Failed to apply voucher.");
+        }
+      } catch (error) {
+        console.error("Error applying voucher:", error);
+        setVoucherMessage("An error occurred while applying the voucher.");
       }
-    } catch {
-      setVoucherStatus("invalid");
-      alert("Voucher not found.");
+    } else {
+      setVoucherMessage("Please enter a valid voucher code and expiration date.");
     }
   };
 
   const handlePayment = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setErrorMessage("");
 
     if (!stripe || !elements) {
-      alert("Stripe not loaded yet.");
+      setErrorMessage("Stripe not loaded yet.");
       setLoading(false);
       return;
     }
 
-    switch (selectedMethod) {
-      case "card":
-        try {
-          const { data } = await axios.post("http://localhost:5056/api/stripe/create-payment-intent", {
-            amount: 1000, // amount in cents = $10.00
-            currency: "usd"
+    if (!selectedMethod) {
+      setErrorMessage("Please select a payment method.");
+      setLoading(false);
+      return;
+    }
+
+    try {
+      let orderData = {};
+
+      if (voucherApplied) {
+        orderData = {
+          voucherCode: voucherCode,
+          expirationDate: expirationDate,
+        };
+        const response = await axios.post("http://localhost:5056/api/vouchers", orderData);
+
+        if (response.status !== 201) {
+          setErrorMessage("Failed to save voucher details.");
+          setLoading(false);
+          return;
+        }
+      }
+
+      switch (selectedMethod) {
+        case "card": {
+          const { data: paymentData } = await axios.post("http://localhost:5056/api/stripe/create-payment-intent", {
+            amount: 1000, // $10.00
+            currency: "usd",
           });
 
-          const result = await stripe.confirmCardPayment(data.clientSecret, {
+          const result = await stripe.confirmCardPayment(paymentData.clientSecret, {
             payment_method: {
               card: elements.getElement(CardElement),
               billing_details: {
@@ -62,62 +94,66 @@ const PaymentOptions = () => {
           });
 
           if (result.error) {
-            alert(`Payment failed: ${result.error.message}`);
-          } else {
-            if (result.paymentIntent.status === "succeeded") {
-              alert("Card payment successful!");
-            }
+            setErrorMessage(`Payment failed: ${result.error.message}`);
+          } else if (result.paymentIntent.status === "succeeded") {
+            alert("Card payment successful!");
           }
-        } catch (err) {
-          console.error("Stripe card error:", err);
-          alert("An error occurred while processing payment.");
+          break;
         }
-        break;
 
-      case "voucher":
-        if (voucherStatus === "valid") {
-          alert("Voucher applied. Proceeding with order...");
-        } else {
-          alert("Invalid or expired voucher.");
+        case "voucher": {
+          if (voucherApplied) {
+            alert("Voucher applied. Order successful!");
+          } else {
+            setErrorMessage("Invalid or expired voucher.");
+          }
+          break;
         }
-        break;
 
-      case "paypal":
-        try {
-          const { data } = await axios.post("http://localhost:5056/api/paypal/create-payment", {
+        case "cod": {
+          alert("Order placed with Cash on Delivery.");
+          break;
+        }
+
+        case "paypal": {
+          const { data: paypalData } = await axios.post("http://localhost:5056/api/paypal/create-payment", {
             amount: "10.00",
             currency: "USD",
           });
-          window.location.href = data.forwardLink;
-        } catch {
-          alert("PayPal payment creation failed.");
+          window.location.href = paypalData.forwardLink;
+          break;
         }
-        break;
 
-      case "cod":
-        alert("Order placed with Cash on Delivery.");
-        break;
-
-      default:
-        alert("Select a payment method.");
+        default: {
+          setErrorMessage("Invalid payment method selected.");
+          break;
+        }
+      }
+    } catch (err) {
+      console.error("Error during payment process:", err);
+      setErrorMessage("An error occurred while processing the payment.");
     }
 
     setLoading(false);
   };
 
+  const handleMethodChange = (method) => {
+    setSelectedMethod(method);
+    if (method !== "voucher") {
+      setVoucherCode("");
+      setExpirationDate("");
+      setVoucherApplied(false);
+      setVoucherMessage("");
+    }
+  };
+
   return (
     <form onSubmit={handlePayment} className="payment-form">
-      <h2 className="text-2xl font-semibold text-center">Add Payment Method</h2>
+      <h2 className="text-2xl font-semibold text-center mb-6">Add Payment Method</h2>
 
       <div className="space-y-4">
         <label className="block">
-          <input
-            type="radio"
-            name="method"
-            value="card"
-            onChange={() => setSelectedMethod("card")}
-          />{" "}
-          Card Payment
+          <input type="radio" name="method" value="card" onChange={() => handleMethodChange("card")} /> Card Payment
         </label>
         {selectedMethod === "card" && (
           <div className="p-4 border rounded-md">
@@ -126,13 +162,7 @@ const PaymentOptions = () => {
         )}
 
         <label className="block">
-          <input
-            type="radio"
-            name="method"
-            value="voucher"
-            onChange={() => setSelectedMethod("voucher")}
-          />{" "}
-          Voucher Code
+          <input type="radio" name="method" value="voucher" onChange={() => handleMethodChange("voucher")} /> Voucher Code
         </label>
         {selectedMethod === "voucher" && (
           <div className="flex items-center gap-2">
@@ -143,40 +173,36 @@ const PaymentOptions = () => {
               placeholder="Enter voucher code"
               className="input-field"
             />
+            <input
+              type="date"
+              value={expirationDate}
+              onChange={(e) => setExpirationDate(e.target.value)}
+              placeholder="Enter expiration date"
+              className="input-field"
+            />
             <button type="button" onClick={handleVoucherCheck} className="btn-apply">
               Apply
             </button>
+            {voucherMessage && <span className="text-green-500">{voucherMessage}</span>}
           </div>
         )}
 
         <label className="block">
-          <input
-            type="radio"
-            name="method"
-            value="cod"
-            onChange={() => setSelectedMethod("cod")}
-          />{" "}
-          Cash on Delivery
+          <input type="radio" name="method" value="cod" onChange={() => handleMethodChange("cod")} /> Cash on Delivery
         </label>
 
         <label className="block">
-          <input
-            type="radio"
-            name="method"
-            value="paypal"
-            onChange={() => setSelectedMethod("paypal")}
-          />{" "}
-          PayPal
+          <input type="radio" name="method" value="paypal" onChange={() => handleMethodChange("paypal")} /> PayPal
         </label>
       </div>
 
-      <button
-        type="submit"
-        disabled={loading}
-        className="btn-submit"
-      >
-        {loading ? "Processing..." : "Proceed to Pay"}
-      </button>
+      {errorMessage && <div className="error-message">{errorMessage}</div>}
+
+      {selectedMethod && (
+        <button type="submit" disabled={loading} className="btn-submit mt-6">
+          {loading ? "Processing..." : "Proceed to Pay"}
+        </button>
+      )}
     </form>
   );
 };
