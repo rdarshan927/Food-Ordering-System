@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate, Link, useParams } from "react-router-dom";
+import Order from "./pages/order/Orders.jsx";
+import CartPage from "./pages/cart/CartPage.jsx";
 // import { PayPalScriptProvider } from "@paypal/react-paypal-js";
 
 // Authentication Pages
@@ -19,12 +21,15 @@ import Home from "./pages/Home";
 import DriverDashboard from "./pages/Delivery/DriverDashboard";
 import DriverDeliveryPage from "./pages/Delivery/DriverDeliveryPage";
 import CustomerDashboard from "./pages/Customer/CustomerDashboard.jsx";
+import PaymentSuccess from "./pages/payment/PaymentSuccess.jsx";
 
 // Other Pages
 import MenuManagement from './pages/Restaurant/MenuManagement.jsx';
 import ProfileSettings from "./pages/Restaurant/ProfileSettings.jsx";
+import ErrorBoundary from "./components/ErrorBoundary";
 
 import styles from "./App.module.css";
+import { AuthProvider } from "./context/AuthContext";
 
 // Wrapper for pages that need params
 const DriverDeliveryPageWrapper = () => {
@@ -48,46 +53,37 @@ const App = () => {
 
   return (
     <Router>
-      {/* <PayPalScriptProvider options={{ "client-id": "YOUR_PAYPAL_CLIENT_ID" }}> */}
-        <div className={`min-h-screen flex flex-col ${styles.appContainer} ${darkMode ? 'dark-mode' : ''}`}>
-          <Header />
-          <button
-            onClick={toggleDarkMode}
-            className={styles.darkModeToggle}
-            aria-label={darkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
-          >
-            {darkMode ? "🌞 Light Mode" : "🌙 Dark Mode"}
-          </button>
-          <main className="flex-grow">
-            <Routes>
-              {/* Home and Main Routes */}
-              <Route path="/" element={<Home />} />
-              <Route path="/dashboard" element={<Dashboard darkMode={darkMode} />} />
-              
-              {/* Authentication Routes */}
-              <Route path="/login" element={<Navigate to="/auth/login" replace />} />
-              <Route path="/register" element={<Navigate to="/auth/register" replace />} />
-              
-              <Route path="/login2" element={<Login2/>} />
-              <Route path="/register2" element={<Register2 />} />
-              
-              {/* Management Routes */}
-              <Route path="/menu-management" element={<MenuManagement />} />
-              <Route path="/profile" element={<ProfileSettings darkMode={darkMode} />} />
-              <Route path="/admin/dashboard" element={<AdminDashboard />} />
-              
-              {/* Driver Routes */}
-              <Route path="/driverdashboard" element={<DriverDashboard />} />
-              <Route path="/driver/:driverId" element={<DriverDeliveryPageWrapper />} />
-              
-              {/* Payment Routes */}
-              <Route path="/checkout" element={<Checkout />} />
-              <Route path="add-payment" element={<AddPaymentMethod/>}/>
-              <Route path="/customer-dashboard" element={<CustomerDashboard />} />
-            </Routes>
-          </main>
-        </div>
-      {/* </PayPalScriptProvider> */}
+      <AuthProvider>
+        <ErrorBoundary>
+          <div className={`min-h-screen flex flex-col ${styles.appContainer} ${darkMode ? 'dark-mode' : ''}`}>
+            <Header />
+            <main className="flex-grow w-full">
+              <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/driverdashboard" element={<DriverDashboard />} />
+                <Route path="/driver/:driverId" element={<DriverDeliveryPageWrapper />} />
+                <Route path="/auth/login" element={<Login />} />
+                <Route path="/auth/register" element={<Register />} />
+                <Route path="/checkout" element={<Checkout />} />
+                <Route path="/order" element={<Order />} />
+                <Route path="/cart" element={<CartPage />} />
+                <Route path="/add-payment" element={<AddPaymentMethod />} />
+
+                <Route path="/register" element={<Register darkMode={darkMode} />} />
+                <Route path="/login" element={<Login darkMode={darkMode} />} />
+                <Route path="/dashboard" element={<Dashboard darkMode={darkMode} />} />
+                <Route path="/menu-management" element={<MenuManagement />} />
+                <Route path="/profile" element={<ProfileSettings darkMode={darkMode} />} />
+                <Route path="/admin/dashboard" element={<AdminDashboard />} />
+                <Route path="/customer-dashboard" element={<CustomerDashboard />} />
+                <Route path="/cart" element={<CartPage />} />
+                <Route path="/payment-success" element={<PaymentSuccess />} />
+                {/* Redirect root path to login */}
+              </Routes>
+            </main>
+          </div>
+        </ErrorBoundary>
+      </AuthProvider>
     </Router>
   );
 };

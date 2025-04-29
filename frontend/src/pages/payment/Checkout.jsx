@@ -1,31 +1,18 @@
-// import PayPalButton from "../../components/PayPalButton.jsx";
-
-// const Checkout = () => {
-//     return (
-//         <div>
-//             <h2>Checkout</h2>
-//             <PayPalButton amount="10.00" currency="USD" />
-//         </div>
-//     );
-// };
-
-// export default Checkout;
-
-import StripeCheckout from "../../components/StripeCheckout";
-import "../../components/CheckoutForm.css";
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const Checkout = () => {
-    return (
-        <div className="checkout-container">
-            <div className="checkout-box">
-                <h2 className="checkout-title">CHECKOUT YOUR ORDRER NOW !</h2>
-                <p className="checkout-description">
-                    Complete your payment securely with Stripe.
-                </p>
-                <StripeCheckout />
-            </div>
-        </div>
-    );
+  const navigate = useNavigate();
+
+  return (
+    <div className="container mx-auto px-4 py-8">
+      <h1 className="text-2xl font-bold mb-4">Checkout</h1>
+      <div className="bg-white p-6 rounded-lg shadow-md">
+        {/* Add your checkout form here */}
+        <p>Checkout page content</p>
+      </div>
+    </div>
+  );
 };
 
 export default Checkout;

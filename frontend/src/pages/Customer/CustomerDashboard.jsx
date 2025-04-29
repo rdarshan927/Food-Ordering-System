@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "../../services/axios"; // Your axios instance
+import AddCartBtn from "../cart/AddCartBtn";
 
 const CustomerDashboard = () => {
   const [restaurants, setRestaurants] = useState([]);
@@ -102,7 +103,7 @@ const CustomerDashboard = () => {
           </button>
           <h1 className="text-3xl font-bold mb-6 text-center">{selectedRestaurant.name} - Menu</h1>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-            {menuItems.map((item) => (
+            {/* {menuItems.map((item) => (
               <div key={item._id} className="border rounded-lg p-4 flex flex-col items-center hover:shadow-lg transition">
                 {item.image ? (
                   <img
@@ -123,7 +124,33 @@ const CustomerDashboard = () => {
                 <p className="text-gray-500 text-sm mb-2">{item.description || "No description available"}</p>
                 <p className="font-bold text-lg">Rs. {parseFloat(item.price).toFixed(2)}</p>
               </div>
-            ))}
+            ))} */}
+            {menuItems.map((item) => (
+  <div key={item._id} className="border rounded-lg p-4 flex flex-col items-center hover:shadow-lg transition">
+    {item.image ? (
+      <img
+        src={`http://localhost:3000/${item.image}`}
+        alt={item.name}
+        className="w-full h-40 object-cover rounded mb-4"
+        onError={(e) => {
+          e.target.onerror = null;
+          e.target.src = "https://via.placeholder.com/150?text=No+Image";
+        }}
+      />
+    ) : (
+      <div className="w-full h-40 bg-gray-200 flex items-center justify-center rounded mb-4">
+        No Image
+      </div>
+    )}
+    <h3 className="text-xl font-semibold mb-1">{item.name}</h3>
+    <p className="text-gray-500 text-sm mb-2">{item.description || "No description available"}</p>
+    <p className="font-bold text-lg mb-2">Rs. {parseFloat(item.price).toFixed(2)}</p>
+
+    {/* Add to Cart Button */}
+    <AddCartBtn item={item} />
+  </div>
+))}
+
           </div>
         </>
       )}
