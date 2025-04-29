@@ -34,6 +34,8 @@ const Register = ({ darkMode }) => {
   const [touched, setTouched] = useState({});
   const [message, setMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingLocation, setIsLoadingLocation] = useState(false);
+  const [locationError, setLocationError] = useState("");
   const [passwordStrength, setPasswordStrength] = useState(0);
   const [showPassword, setShowPassword] = useState(false);
 
@@ -381,6 +383,47 @@ const Register = ({ darkMode }) => {
     return styles.strongPassword;
   };
 
+  const getCurrentLocation = () => {
+    setIsLoadingLocation(true);
+    setLocationError("");
+
+    if (!navigator.geolocation) {
+      setLocationError("Geolocation is not supported by your browser");
+      setIsLoadingLocation(false);
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setFormData(prev => ({
+          ...prev,
+          location: {
+            ...prev.location,
+            coordinates: {
+              latitude: position.coords.latitude,
+              longitude: position.coords.longitude
+            }
+          }
+        }));
+        setIsLoadingLocation(false);
+      },
+      (error) => {
+        console.error("Error getting location:", error);
+        setLocationError("Unable to retrieve your location. Please try again.");
+        setIsLoadingLocation(false);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 5000,
+        maximumAge: 0
+      }
+    );
+  };
+
+  useEffect(() => {
+    getCurrentLocation();
+  }, []);
+
   return (
     <div className={`${styles.container} ${darkMode ? styles.dark : ''}`}>
       <form className={styles.form} onSubmit={handleSubmit} noValidate>
@@ -721,6 +764,42 @@ const Register = ({ darkMode }) => {
             </div>
           )}
           <div className={styles.fileHint}>Recommended size: 1200×300 pixels (Max 5MB)</div>
+        </div>
+
+        <div className={styles.inputGroup}>
+          <label className={styles.label}>
+            Location Coordinates
+            <button 
+              type="button"
+              onClick={getCurrentLocation}
+              className={styles.refreshButton}
+              disabled={isLoadingLocation}
+            >
+              {isLoadingLocation ? 'Getting location...' : 'Refresh Location'}
+            </button>
+          </label>
+          
+          {isLoadingLocation && (
+            <div className={styles.locationStatus}>
+              Getting current location...
+            </div>
+          )}
+          
+          {locationError && (
+            <div className={styles.errorText} role="alert">
+              {locationError}
+            </div>
+          )}
+          
+          {formData.location.coordinates.latitude !== 0 && (
+            <div className={styles.locationStatus}>
+              <span>📍 Location captured: </span>
+              <br />
+              Latitude: {formData.location.coordinates.latitude.toFixed(6)}
+              <br />
+              Longitude: {formData.location.coordinates.longitude.toFixed(6)}
+            </div>
+          )}
         </div>
 
         {message && (

@@ -57,42 +57,145 @@ const PaymentOptions = () => {
     try {
       switch (selectedMethod) {
         case "card": {
-          const { data: paymentData } = await axios.post("http://localhost:5056/api/stripe/create-payment-intent", {
-            amount: orderSummary.total * 100,
-            currency: "inr",
-            items: orderSummary.items
-          });
+          try {
+            // First create payment intent
+            const { data: paymentData } = await axios.post("http://localhost:5056/api/stripe/create-payment-intent", {
+              amount: orderSummary.total * 100,
+              currency: "inr",
+              items: orderSummary.items
+            });
 
-          const result = await stripe.confirmCardPayment(paymentData.clientSecret, {
-            payment_method: {
-              card: elements.getElement(CardElement),
-              billing_details: {
-                address: orderSummary.deliveryAddress,
-                phone: orderSummary.receiverPhone
+            // Confirm card payment
+            const result = await stripe.confirmCardPayment(paymentData.clientSecret, {
+              payment_method: {
+                card: elements.getElement(CardElement),
+                billing_details: {
+                  address: orderSummary.deliveryAddress,
+                  phone: orderSummary.receiverPhone
+                },
               },
-            },
-          });
+            });
 
-          if (result.error) {
-            setErrorMessage(`Payment failed: ${result.error.message}`);
-          } else if (result.paymentIntent.status === "succeeded") {
-            localStorage.removeItem('paymentDetails');
-            navigate('/payment-success');
+            if (result.error) {
+              setErrorMessage(`Payment failed: ${result.error.message}`);
+            } else if (result.paymentIntent.status === "succeeded") {
+              // Get required IDs
+              const customerId = localStorage.getItem('userId');
+              const restaurantId = orderSummary.items[0]?.restaurantId;
+
+              if (!customerId || !restaurantId) {
+                throw new Error('Missing required customer or restaurant ID');
+              }
+
+              console.log("Creating order with:", {
+                customerId,
+                restaurantId,
+                items: orderSummary.items,
+                totalAmount: orderSummary.total,
+                paymentMethod: 'card',
+                deliveryAddress: orderSummary.deliveryAddress
+              });
+
+              // Create order after successful payment
+              const orderPayload = {
+                  customerId: customerId,
+                  restaurantId: restaurantId,
+                  items: orderSummary.items.map(item => ({
+                      name: item.productName,
+                      price: parseFloat(item.price),
+                      quantity: parseInt(item.quantity)
+                  })),
+                  totalAmount: parseFloat(orderSummary.total),
+                  paymentMethod: 'card',
+                  deliveryAddress: orderSummary.deliveryAddress || 'No address set',
+                  status: 'Paid'
+              };
+
+              try {
+                  console.log('Sending order payload:', orderPayload);
+                  const orderResponse = await axios.post("http://localhost:5051/api/orders", orderPayload);
+                  console.log('Order creation response:', orderResponse.data);
+
+                  if (!orderResponse.data._id) {
+                      throw new Error('Order creation failed - no order ID returned');
+                  }
+
+                  // Get coordinates for delivery
+                  const { restaurantLatitude, restaurantLongitude, customerLatitude, customerLongitude } = orderSummary;
+
+                  console.log("Creating delivery with:", {
+                    orderId: orderResponse.data._id,
+                    coordinates: {
+                      shop: [restaurantLatitude, restaurantLongitude],
+                      customer: [customerLatitude, customerLongitude]
+                    }
+                  });
+
+                  // Create delivery with order ID from order creation response
+                  await axios.post(`http://localhost:8081/api/delivery/create`, null, {
+                    params: {
+                      orderId: orderResponse.data._id,
+                      userId: customerId,
+                      shopLatitude: restaurantLatitude,
+                      shopLongitude: restaurantLongitude,
+                      destinationLatitude: customerLatitude,
+                      destinationLongitude: customerLongitude
+                    }
+                  });
+
+                  localStorage.removeItem('paymentDetails');
+                  navigate('/payment-success');
+              } catch (error) {
+                  console.error('Order creation error:', error.response?.data || error.message);
+                  throw error;
+              }
+
+            }
+          } catch (err) {
+            console.error("Error during payment process:", err);
+            setErrorMessage(err.response?.data?.message || "An error occurred while processing the payment.");
+            throw err;
           }
           break;
         }
 
         case "cod": {
-          await axios.post("http://localhost:5051/api/orders/create", {
-            items: orderSummary.items,
-            total: orderSummary.total,
-            paymentMethod: 'cod',
-            deliveryAddress: orderSummary.deliveryAddress,
-            receiverPhone: orderSummary.receiverPhone
-          });
-          
-          localStorage.removeItem('paymentDetails');
-          navigate('/payment-success');
+          try {
+            // First create the order
+            await axios.post("http://localhost:5051/api/orders/create", {
+              items: orderSummary.items,
+              total: orderSummary.total,
+              paymentMethod: 'cod',
+              deliveryAddress: orderSummary.deliveryAddress,
+              receiverPhone: orderSummary.receiverPhone
+            });
+
+            // Then create the deliveryorderResponse.data.orderId;
+            // Get userId from localStorage (assuming it's stored during login)
+            const userId = localStorage.getItem('userId');
+            // Get restaurant coordinates from orderSummary (you'll need to add this when storing cart details)
+            const { restaurantLatitude, restaurantLongitude, customerLatitude, customerLongitude } = orderSummary;
+            console.log(orderSummary, "Order Summary Data");
+            console.log(userId, "User ID");
+            console.log(orderSummary.orderId, "Order ID");
+
+            await axios.post(`http://localhost:8081/api/delivery/create`, null, {
+              params: {
+                orderId: orderSummary.orderId,
+                userId: userId,
+                shopLatitude: restaurantLatitude,
+                shopLongitude: restaurantLongitude,
+                destinationLatitude: customerLatitude,
+                destinationLongitude: customerLongitude
+              }
+            });
+
+            localStorage.removeItem('paymentDetails');
+            navigate('/payment-success');
+          } catch (err) {
+            console.error("Error creating order/delivery:", err);
+            throw err;
+          }
           break;
         }
 

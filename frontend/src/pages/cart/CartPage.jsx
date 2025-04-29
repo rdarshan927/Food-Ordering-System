@@ -30,9 +30,18 @@ const CartPage = () => {
       try {
         const [cartRes, deliveryRes] = await Promise.all([
           api.get(`/api/cart/${userEmail}`),
-          api.get(`/api/cart/delivery/${userEmail}`) // Updated path to match backend route
+          api.get(`/api/cart/delivery/${userEmail}`)
         ]);
-        setCarts(cartRes.data);
+
+        // Add default restaurant coordinates if not available
+        const cartsWithRestaurantInfo = cartRes.data.map(cart => ({
+          ...cart,
+          restaurantId: cart._id, // Using cart _id as restaurantId temporarily
+          restaurantLatitude: 13.0827, // Default coordinates for testing
+          restaurantLongitude: 80.2707 // Default coordinates for testing
+        }));
+
+        setCarts(cartsWithRestaurantInfo);
 
         if (deliveryRes.data) {
           setDeliveryAddress(deliveryRes.data.deliveryAddress || "No address set");
@@ -73,19 +82,62 @@ const CartPage = () => {
 
   const makePayment = async () => {
     try {
-      // Store cart details in localStorage for payment page
+      if (!carts.length) {
+        throw new Error('Cart is empty');
+      }
+
+      const firstCart = carts[0];
+      if (!firstCart) {
+        throw new Error('No items in cart');
+      }
+
+      const position = await new Promise((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject);
+      });
+
       const paymentDetails = {
-        items: carts,
+        items: carts.map(item => ({
+          ...item,
+          productId: item._id,
+          quantity: item.quantity,
+          price: item.price,
+          restaurantId: item.restaurantId,
+          restaurantLatitude: item.restaurantLatitude,
+          restaurantLongitude: item.restaurantLongitude
+        })),
         total: total,
         deliveryAddress,
-        receiverPhone
+        receiverPhone,
+        restaurantId: firstCart.restaurantId,
+        restaurantLatitude: firstCart.restaurantLatitude,
+        restaurantLongitude: firstCart.restaurantLongitude,
+        customerLatitude: position.coords.latitude,
+        customerLongitude: position.coords.longitude
       };
-      localStorage.setItem('paymentDetails', JSON.stringify(paymentDetails));
+
+      // Debug log
+      console.log("Payment Details:", paymentDetails);
+
+      // Validate all required fields
+      const requiredFields = [
+        'items', 'total', 'deliveryAddress', 'receiverPhone',
+        'restaurantId', 'restaurantLatitude', 'restaurantLongitude',
+        'customerLatitude', 'customerLongitude'
+      ];
+
+      const missingFields = requiredFields.filter(field => {
+        const value = paymentDetails[field];
+        return value === undefined || value === null || value === '';
+      });
+
+      if (missingFields.length) {
+        throw new Error(`Missing required fields: ${missingFields.join(', ')}`);
+      }
       
-      // Navigate to payment page
-      window.location.href = '/add-payment';  // Update this path according to your routing
+      localStorage.setItem('paymentDetails', JSON.stringify(paymentDetails));
+      window.location.href = '/add-payment';
     } catch (error) {
-      console.error("Payment error", error);
+      console.error("Payment error:", error.message);
     }
   };
 

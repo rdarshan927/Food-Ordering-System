@@ -69,8 +69,8 @@ const App = () => {
                 <Route path="/cart" element={<CartPage />} />
                 <Route path="/add-payment" element={<AddPaymentMethod />} />
 
-                <Route path="/register" element={<Register darkMode={darkMode} />} />
-                <Route path="/login" element={<Login darkMode={darkMode} />} />
+                <Route path="/register" element={<Register2 darkMode={darkMode} />} />
+                <Route path="/login" element={<Login2 darkMode={darkMode} />} />
                 <Route path="/dashboard" element={<Dashboard darkMode={darkMode} />} />
                 <Route path="/menu-management" element={<MenuManagement />} />
                 <Route path="/profile" element={<ProfileSettings darkMode={darkMode} />} />

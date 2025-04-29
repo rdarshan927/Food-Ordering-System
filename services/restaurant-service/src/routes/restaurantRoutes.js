@@ -14,7 +14,8 @@ const {
   deleteMyRestaurant,
   getMenuItems,
   deleteRestaurantById,
-  deleteAllMenuItems // Add this import
+  deleteAllMenuItems,
+  getRestaurantCoordinates // Add this import
 } = require("../controllers/restaurantController");
 
 const router = express.Router();
@@ -66,6 +67,9 @@ router.post("/menu", protect, (req, res, next) => {
 
 router.get("/me", protect, getMyRestaurant);  // For owner to get their own restaurant
 router.get("/:restaurantId", getRestaurantById);  // For getting restaurant by ID
+
+// Update the route to use the imported controller function
+router.get("/:restaurantId/coordinates", protect, getRestaurantCoordinates);
 
 // Add the new delete route (protected by authentication)
 router.delete("/me", protect, deleteMyRestaurant);

@@ -1,20 +1,21 @@
 const mongoose = require("mongoose");
 
-const MenuItemSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  price: { type: Number, required: true },
-  description: { type: String },
-  image: { type: String },
-});
-
 const LocationSchema = new mongoose.Schema({
   address: { type: String, required: true },
   city: { type: String, required: true },
   postalCode: { type: String, required: true },
   coordinates: {
-    latitude: { type: Number },
-    longitude: { type: Number }
+    latitude: { type: Number, required: true }, // Made required
+    longitude: { type: Number, required: true }  // Made required
   }
+});
+
+const MenuItemSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  price: { type: Number, required: true },
+  description: { type: String },
+  image: { type: String },
+  restaurantId: { type: mongoose.Schema.Types.ObjectId, ref: 'Restaurant' } // Added this
 });
 
 const RestaurantSchema = new mongoose.Schema({

@@ -200,13 +200,22 @@ exports.getRestaurantById = async (req, res) => {
     const restaurant = await Restaurant.findById(restaurantId);
     if (!restaurant) return res.status(404).json({ message: "Restaurant not found" });
 
-    res.json(restaurant);
+    // Transform the response to include flattened coordinates
+    const response = {
+      ...restaurant.toObject(),
+      restaurantId: restaurant._id,
+      restaurantLatitude: restaurant.location.coordinates.latitude,
+      restaurantLongitude: restaurant.location.coordinates.longitude
+    };
+
+    res.json(response);
   } catch (error) {
-    res.status(500).json({ message: "Server error", error });
+    console.error("Error fetching restaurant:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 };
 
-// Get menu items for a specific restaurant
+// Update the menu items endpoint to include restaurant coordinates
 exports.getMenuItems = async (req, res) => {
   try {
     const { restaurantId } = req.params;
@@ -214,9 +223,18 @@ exports.getMenuItems = async (req, res) => {
     const restaurant = await Restaurant.findById(restaurantId);
     if (!restaurant) return res.status(404).json({ message: "Restaurant not found" });
 
-    res.json({ menu: restaurant.menu });
+    // Add restaurant details to each menu item
+    const menuWithDetails = restaurant.menu.map(item => ({
+      ...item.toObject(),
+      restaurantId: restaurant._id,
+      restaurantLatitude: restaurant.location.coordinates.latitude,
+      restaurantLongitude: restaurant.location.coordinates.longitude
+    }));
+
+    res.json({ menu: menuWithDetails });
   } catch (error) {
-    res.status(500).json({ message: "Server error", error });
+    console.error("Error fetching menu items:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 };
 
@@ -274,6 +292,26 @@ exports.deleteRestaurantById = async (req, res) => {
 
     res.json({ message: "Restaurant deleted successfully" });
   } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+exports.getRestaurantCoordinates = async (req, res) => {
+  try {
+    const { restaurantId } = req.params;
+
+    const restaurant = await Restaurant.findById(restaurantId);
+    if (!restaurant) return res.status(404).json({ message: "Restaurant not found" });
+
+    const coordinates = {
+      restaurantId: restaurant._id,
+      restaurantLatitude: restaurant.location.coordinates.latitude,
+      restaurantLongitude: restaurant.location.coordinates.longitude
+    };
+
+    res.json(coordinates);
+  } catch (error) {
+    console.error("Error fetching coordinates:", error);
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
