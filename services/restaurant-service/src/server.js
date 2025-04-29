@@ -7,6 +7,7 @@ const path = require("path"); // Add this line
 const restaurantRoutes = require("./routes/restaurantRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 const authRoutes = require("./routes/authRoutes");
+const customerRoutes = require("./routes/customerRoutes");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -23,6 +24,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/restaurants", restaurantRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/restaurant", restaurantRoutes);
+app.use("/api/customers", customerRoutes);
 
 // Health Check
 app.get("/health", (req, res) => {

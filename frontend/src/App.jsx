@@ -18,6 +18,7 @@ import Header from "./components/Header";
 import Home from "./pages/Home";
 import DriverDashboard from "./pages/Delivery/DriverDashboard";
 import DriverDeliveryPage from "./pages/Delivery/DriverDeliveryPage";
+import CustomerDashboard from "./pages/Customer/CustomerDashboard.jsx";
 
 // Other Pages
 import MenuManagement from './pages/Restaurant/MenuManagement.jsx';
@@ -82,6 +83,7 @@ const App = () => {
               {/* Payment Routes */}
               <Route path="/checkout" element={<Checkout />} />
               <Route path="add-payment" element={<AddPaymentMethod/>}/>
+              <Route path="/customer-dashboard" element={<CustomerDashboard />} />
             </Routes>
           </main>
         </div>
