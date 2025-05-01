@@ -13,9 +13,11 @@ services:
       - usermanagement-service
       - delivery-service
     environment:
-      - VITE_API_URL=http://localhost:5000
+      - VITE_API_URL=http://host.docker.internal:5000
     networks:
       - food-ordering-network
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
   # Backend Services
   order-service:
@@ -57,31 +59,6 @@ services:
       - ./services/restaurant-service/uploads:/app/uploads
     networks:
       - food-ordering-network
-
-  # notification-service:
-  #   build: ./services/notification-service
-  #   ports:
-  #     - "5005:5000"
-  #   environment:
-  #     - PORT=5000
-  #     - NODE_ENV=development
-  #   depends_on:
-  #     - rabbitmq
-  #   networks:
-  #     - food-ordering-network
-  notification-service:
-    build: ./services/notification-service
-    ports:
-      - "5005:5000"
-    environment:
-      - PORT=5000
-      - NODE_ENV=development
-      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
-    depends_on:
-      - rabbitmq
-    networks:
-      - food-ordering-network
-
 
   usermanagement-service:
     build: ./services/usermanagement-service
@@ -126,6 +103,20 @@ services:
       - rabbitmq-data:/var/lib/rabbitmq
     networks:
       - food-ordering-network
+
+  notification-service:
+    build: ./services/notification-service
+    ports:
+      - "5005:5000"
+    environment:
+      - PORT=5000
+      - NODE_ENV=development
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
+    depends_on:
+      - rabbitmq
+    networks:
+      - food-ordering-network
+
 
 networks:
   food-ordering-network:
