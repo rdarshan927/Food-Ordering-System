@@ -27,6 +27,7 @@ import PaymentSuccess from "./pages/payment/PaymentSuccess.jsx";
 import MenuManagement from './pages/Restaurant/MenuManagement.jsx';
 import ProfileSettings from "./pages/Restaurant/ProfileSettings.jsx";
 import ErrorBoundary from "./components/ErrorBoundary";
+import RestaurantDetail from "./pages/Customer/RestaurantDetail";
 
 import styles from "./App.module.css";
 import { AuthProvider } from "./context/AuthContext";
@@ -80,8 +81,13 @@ const App = () => {
                 <Route path="/cart" element={<CartPage />} />
                 <Route path="/payment-success" element={<PaymentSuccess />} />
                 <Route path="/customer-tracking/:orderId" element={<CustomerTrackingPage />} />
-              {/* Add other routes here */}
-            </Routes>
+                
+                {/* Add the new restaurant detail route */}
+                <Route path="/restaurant/:restaurantId" element={<RestaurantDetail />} />
+                <Route path="/restaurants" element={<CustomerDashboard />} />
+                
+                {/* Add other routes here */}
+              </Routes>
             </main>
           </div>
         {/* </ErrorBoundary> */}
