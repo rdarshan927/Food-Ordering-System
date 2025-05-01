@@ -1,16 +1,12 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { jwtDecode } from "jwt-decode";
-import { useNavigate } from 'react-router-dom';
 import { Link, useNavigate } from 'react-router-dom';
-// import { useNavigate } from 'react-router-dom';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
-  const [userId, setUserId] = useState('');
-  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -34,16 +30,24 @@ const Login = () => {
       localStorage.setItem('useremailc', res.data.user.email);
 
       console.log("Login successful:", res.data.user.email);
-
-      setUserId(decoded.id);
       setMessage('Login successful!');
+      
+      // Role-based redirection
+      if (decoded.role === "DRIVER") {
+        // If user is a driver, redirect to driver page with ID
+        navigate(`/driver/${decoded.id}`);
+      } else if (decoded.role === "USER") {
+        // If user is a customer, redirect to customer dashboard
+        navigate('/customer-dashboard');
+      } else if (decoded.role === "ADMIN") {
+        // If user is an admin, redirect to admin dashboard
+        navigate('/admin/dashboard');
+      } else {
+        // Default redirection to home page
+        navigate('/');
+      }
+      
       setLoading(false);
-      // navigate('/'); // Redirect to home page or dashboard
-      // console.log(decoded.id)
-      navigate(`/driver/${decoded.id}`);
-
-      navigate('/customer-dashboard'); // Redirect to customer dashboard
-
     } catch (err) {
       setMessage(err.response?.data?.message || 'Login failed');
       setLoading(false);

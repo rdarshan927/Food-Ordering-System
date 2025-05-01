@@ -79,7 +79,6 @@ const App = () => {
                 <Route path="/customer-dashboard" element={<CustomerDashboard />} />
                 <Route path="/cart" element={<CartPage />} />
                 <Route path="/payment-success" element={<PaymentSuccess />} />
-                {/* Redirect root path to login */}
                 <Route path="/customer-tracking/:orderId" element={<CustomerTrackingPage />} />
               {/* Add other routes here */}
             </Routes>
