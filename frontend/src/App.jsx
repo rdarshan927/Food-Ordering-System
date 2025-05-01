@@ -30,6 +30,7 @@ import ErrorBoundary from "./components/ErrorBoundary";
 
 import styles from "./App.module.css";
 import { AuthProvider } from "./context/AuthContext";
+import CustomerTrackingPage from "./pages/Delivery/CustomerTrackingPage";
 
 // Wrapper for pages that need params
 const DriverDeliveryPageWrapper = () => {
@@ -78,8 +79,9 @@ const App = () => {
                 <Route path="/customer-dashboard" element={<CustomerDashboard />} />
                 <Route path="/cart" element={<CartPage />} />
                 <Route path="/payment-success" element={<PaymentSuccess />} />
-                {/* Redirect root path to login */}
-              </Routes>
+                <Route path="/customer-tracking/:orderId" element={<CustomerTrackingPage />} />
+              {/* Add other routes here */}
+            </Routes>
             </main>
           </div>
         {/* </ErrorBoundary> */}
