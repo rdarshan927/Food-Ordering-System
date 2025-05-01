@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useAuth } from '../../context/AuthContext';
-
+import axios from 'axios'; // Make sure axios is imported
 
 const Orders = () => {
   const { isAuthenticated } = useAuth();
@@ -10,7 +10,10 @@ const Orders = () => {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
   const [error, setError] = useState('');
-
+  
+  // Get user email from localStorage
+  const userID = localStorage.getItem('userId'); // Ensure you're storing email in localStorage
+  
   const pageAnimation = {
     initial: { opacity: 0 },
     animate: { opacity: 1, transition: { staggerChildren: 0.1 } },
@@ -22,15 +25,34 @@ const Orders = () => {
   };
 
   useEffect(() => {
-    fetchOrders();
-  }, []);
+    if (userID) {
+      fetchOrders();
+    } else {
+      setError('User not authenticated');
+      setLoading(false);
+    }
+  }, [userID]);
 
   const fetchOrders = async () => {
     try {
-      const data = await orderService.getAllOrders();
-      setOrders(data);
+      setLoading(true);
+      
+      // Use the endpoint to fetch orders by customer email
+      const response = await axios.get(`http://localhost:5051/api/orders/customer/${userID}`);
+      
+      // If the response has orders property, use it (handles the empty orders case)
+      if (response.data.orders) {
+        setOrders(response.data.orders);
+      } else {
+        // Otherwise, the response is the array of orders directly
+        setOrders(response.data);
+      }
+      
+      setError('');
     } catch (err) {
-      setError(err.message);
+      console.error('Error fetching orders:', err);
+      setError(err.response?.data?.message || 'Failed to fetch orders');
+      setOrders([]);
     } finally {
       setLoading(false);
     }
@@ -69,6 +91,8 @@ const Orders = () => {
       </div>
     );
   }
+  
+  // Rest of your component stays the same
   return (
     <motion.div
       initial="initial"
@@ -131,7 +155,7 @@ const Orders = () => {
               <div className="flex justify-between items-center">
                 <h3 className="text-lg font-semibold text-gray-900">Order #{order._id.slice(-6)}</h3>
                 <Link
-                  to={`/tracking/${order._id}`}
+                  to={`/customer-tracking/${order._id}`}
                   className="text-indigo-500 hover:text-indigo-600"
                 >
                   Track Order →
