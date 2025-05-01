@@ -58,17 +58,30 @@ services:
     networks:
       - food-ordering-network
 
+  # notification-service:
+  #   build: ./services/notification-service
+  #   ports:
+  #     - "5005:5000"
+  #   environment:
+  #     - PORT=5000
+  #     - NODE_ENV=development
+  #   depends_on:
+  #     - rabbitmq
+  #   networks:
+  #     - food-ordering-network
   notification-service:
     build: ./services/notification-service
     ports:
-      - "5000:5000"
+      - "5005:5000"
     environment:
       - PORT=5000
       - NODE_ENV=development
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
     depends_on:
       - rabbitmq
     networks:
       - food-ordering-network
+
 
   usermanagement-service:
     build: ./services/usermanagement-service
