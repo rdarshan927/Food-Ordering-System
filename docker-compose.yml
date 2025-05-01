@@ -1,22 +1,122 @@
 version: "3.8"
 services:
-  backend:
-    build: ./backend
-    ports:
-      - "5000:5000"
-    depends_on:
-      - mongo-db
-
+  # Frontend
   frontend:
     build: ./frontend
     ports:
       - "5173:5173"
     depends_on:
-      - backend
-
-  mongo-db:
-    image: mongo:latest
-    ports:
-      - "27017:27017"
+      - order-service
+      - payment-service
+      - restaurant-service
+      - notification-service
+      - usermanagement-service
+      - delivery-service
     environment:
-      MONGO_INITDB_DATABASE: food_ordering
+      - VITE_API_URL=http://localhost:5000
+    networks:
+      - food-ordering-network
+
+  # Backend Services
+  order-service:
+    build: ./services/order-service
+    ports:
+      - "5051:5051"
+    environment:
+      - PORT=5051
+      - MONGO_URI=${ORDER_SERVICE_MONGO_URI}
+      - NODE_ENV=development
+    depends_on:
+      - rabbitmq
+    networks:
+      - food-ordering-network
+
+  payment-service:
+    build: ./services/payment-service
+    ports:
+      - "5056:5056"
+    environment:
+      - PORT=5056
+      - MONGO_URI=${PAYMENT_SERVICE_MONGO_URI}
+      - NODE_ENV=development
+    depends_on:
+      - rabbitmq
+    networks:
+      - food-ordering-network
+
+  restaurant-service:
+    build: ./services/restaurant-service
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - MONGO_URI=${RESTAURANT_SERVICE_MONGO_URI:-mongodb+srv://it22172600:varanan@cluster0.camdh.mongodb.net/restaurant-service?retryWrites=true&w=majority}
+      - NODE_ENV=development
+      - JWT_SECRET=${RESTAURANT_SERVICE_JWT_SECRET:-your-jwt-secret-key}
+    volumes:
+      - ./services/restaurant-service/uploads:/app/uploads
+    networks:
+      - food-ordering-network
+
+  notification-service:
+    build: ./services/notification-service
+    ports:
+      - "5000:5000"
+    environment:
+      - PORT=5000
+      - NODE_ENV=development
+    depends_on:
+      - rabbitmq
+    networks:
+      - food-ordering-network
+
+  usermanagement-service:
+    build: ./services/usermanagement-service
+    ports:
+      - "5052:5052"
+    environment:
+      - PORT=5052
+      - MONGO_URI=${USER_SERVICE_MONGO_URI}
+      - NODE_ENV=development
+      - JWT_SECRET=${USER_SERVICE_JWT_SECRET:-your-jwt-secret-key}
+    depends_on:
+      - rabbitmq
+    networks:
+      - food-ordering-network
+
+  delivery-service:
+    build: ./services/delivery-service
+    ports:
+      - "8081:8081"
+    environment:
+      - SPRING_DATA_MONGODB_URI=${DELIVERY_SERVICE_MONGO_URI}
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_RABBITMQ_HOST=rabbitmq
+      - SPRING_RABBITMQ_PORT=5672
+      - SPRING_RABBITMQ_USERNAME=guest
+      - SPRING_RABBITMQ_PASSWORD=guest
+    depends_on:
+      - rabbitmq
+    networks:
+      - food-ordering-network
+
+  # Infrastructure Services
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672" # AMQP protocol port
+      - "15672:15672" # Management UI port
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    networks:
+      - food-ordering-network
+
+networks:
+  food-ordering-network:
+    driver: bridge
+
+volumes:
+  rabbitmq-data:

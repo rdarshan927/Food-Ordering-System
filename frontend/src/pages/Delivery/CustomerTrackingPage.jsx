@@ -1,6 +1,6 @@
-// export default CustomerTrackingPage;
 import React, { useEffect, useState, useRef } from 'react';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+// Remove MapContainer, TileLayer, Marker, Popup imports
+// import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { useParams } from 'react-router-dom';
@@ -12,6 +12,7 @@ import redIconUrl from '../../assets/marker-red.png';
 import greenIconUrl from '../../assets/marker-green.webp';
 import blueIconUrl from '../../assets/marker-blue.webp';
 
+// Keep existing icon definitions
 const redIcon = new L.Icon({
   iconUrl: redIconUrl,
   shadowUrl: markerShadow,
@@ -90,8 +91,11 @@ const CustomerTrackingPage = () => {
   const token = localStorage.getItem("token");
   const { orderId } = useParams();
   const userId = localStorage.getItem("userId");
-
-  const mapRef = useRef();
+  
+  // Refs for direct Leaflet interaction
+  const mapRef = useRef(null); // DOM element ref
+  const leafletMapRef = useRef(null); // Leaflet map instance ref
+  const markersRef = useRef([]); // Track markers for cleanup
 
   useEffect(() => {
     console.log(userId, orderId);
@@ -110,16 +114,93 @@ const CustomerTrackingPage = () => {
     return () => clearInterval(intervalId);
   }, [orderId, userId, token]);
 
+  // Effect to initialize and update map
   useEffect(() => {
-    if (delivery && mapRef.current) {
+    if (!delivery || !mapRef.current) return;
+    
+    // Clean up existing markers
+    if (markersRef.current.length > 0) {
+      markersRef.current.forEach(marker => {
+        if (leafletMapRef.current) {
+          marker.remove();
+        }
+      });
+      markersRef.current = [];
+    }
+    
+    // Initialize map if not already initialized
+    if (!leafletMapRef.current) {
+      leafletMapRef.current = L.map(mapRef.current).setView(
+        [delivery.destinationLatitude, delivery.destinationLongitude], 
+        15
+      );
+      
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a>'
+      }).addTo(leafletMapRef.current);
+    }
+    
+    // Set bounds to fit all markers
+    if (delivery.shopLatitude && delivery.shopLongitude && 
+        delivery.destinationLatitude && delivery.destinationLongitude) {
+          
       const bounds = [
         [delivery.shopLatitude, delivery.shopLongitude],
-        [delivery.destinationLatitude, delivery.destinationLongitude],
-        [delivery.driverLatitude, delivery.driverLongitude]
+        [delivery.destinationLatitude, delivery.destinationLongitude]
       ];
-
-      mapRef.current.fitBounds(bounds);
+      
+      // Add driver position to bounds if available
+      if (delivery.driverLatitude && delivery.driverLongitude) {
+        bounds.push([delivery.driverLatitude, delivery.driverLongitude]);
+      }
+      
+      leafletMapRef.current.fitBounds(bounds);
     }
+    
+    // Add shop marker
+    if (delivery.shopLatitude && delivery.shopLongitude) {
+      const shopMarker = L.marker(
+        [delivery.shopLatitude, delivery.shopLongitude], 
+        { icon: ShopLabelIcon }
+      ).addTo(leafletMapRef.current);
+      shopMarker.bindPopup('Shop Location');
+      markersRef.current.push(shopMarker);
+    }
+    
+    // Add destination marker
+    if (delivery.destinationLatitude && delivery.destinationLongitude) {
+      const yourMarker = L.marker(
+        [delivery.destinationLatitude, delivery.destinationLongitude], 
+        { icon: YourLabelIcon }
+      ).addTo(leafletMapRef.current);
+      yourMarker.bindPopup('Your Location');
+      markersRef.current.push(yourMarker);
+    }
+    
+    // Add driver marker
+    if (delivery.driverLatitude && delivery.driverLongitude) {
+      const driverMarker = L.marker(
+        [delivery.driverLatitude, delivery.driverLongitude], 
+        { icon: DriverLabelIcon }
+      ).addTo(leafletMapRef.current);
+      driverMarker.bindPopup('Driver Current Location');
+      markersRef.current.push(driverMarker);
+    }
+    
+    // Update map size after rendering
+    setTimeout(() => {
+      if (leafletMapRef.current) {
+        leafletMapRef.current.invalidateSize();
+      }
+    }, 100);
+    
+    // Clean up function
+    return () => {
+      if (leafletMapRef.current && !mapRef.current) {
+        leafletMapRef.current.remove();
+        leafletMapRef.current = null;
+      }
+    };
   }, [delivery]);
 
   return (
@@ -133,7 +214,9 @@ const CustomerTrackingPage = () => {
 
           {delivery ? (
             <div className="p-6">
+              {/* Cards section - keep unchanged */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                {/* Order Details card */}
                 <div className="bg-white p-5 rounded-xl shadow-md border border-gray-100">
                   <h3 className="text-lg font-semibold text-gray-700 mb-2 flex items-center">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -167,6 +250,7 @@ const CustomerTrackingPage = () => {
                   </p>
                 </div>
                 
+                {/* Location Guide card */}
                 <div className="bg-white p-5 rounded-xl shadow-md border border-gray-100">
                   <h3 className="text-lg font-semibold text-gray-700 mb-2 flex items-center">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -195,6 +279,7 @@ const CustomerTrackingPage = () => {
                   </div>
                 </div>
                 
+                {/* Tracking Info card */}
                 <div className="bg-white p-5 rounded-xl shadow-md border border-gray-100">
                   <h3 className="text-lg font-semibold text-gray-700 mb-2 flex items-center">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -223,36 +308,18 @@ const CustomerTrackingPage = () => {
                 </div>
               </div>
               
+              {/* Replace MapContainer with direct Leaflet implementation */}
               <div className="h-[600px] w-full rounded-xl overflow-hidden border-2 border-gray-200 shadow-lg">
-                <MapContainer
-                  center={[delivery.destinationLatitude, delivery.destinationLongitude]}
-                  zoom={15}
-                  className="h-full w-full"
-                  ref={mapRef}
-                >
-                  <TileLayer
-                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                    attribution='&copy; OpenStreetMap contributors'
-                  />
-
-                  {delivery.shopLatitude && delivery.shopLongitude && (
-                    <Marker position={[delivery.shopLatitude, delivery.shopLongitude]} icon={ShopLabelIcon}>
-                      <Popup>Shop Location</Popup>
-                    </Marker>
-                  )}
-
-                  {delivery.destinationLatitude && delivery.destinationLongitude && (
-                    <Marker position={[delivery.destinationLatitude, delivery.destinationLongitude]} icon={YourLabelIcon}>
-                      <Popup>Your Location</Popup>
-                    </Marker>
-                  )}
-
-                  {delivery.driverLatitude && delivery.driverLongitude && (
-                    <Marker position={[delivery.driverLatitude, delivery.driverLongitude]} icon={DriverLabelIcon}>
-                      <Popup>Driver Current Location</Popup>
-                    </Marker>
-                  )}
-                </MapContainer>
+                {delivery ? (
+                  <div 
+                    ref={mapRef} 
+                    className="h-full w-full"
+                  ></div>
+                ) : (
+                  <div className="h-full w-full flex items-center justify-center">
+                    <p className="text-gray-400">Loading map...</p>
+                  </div>
+                )}
               </div>
             </div>
           ) : (

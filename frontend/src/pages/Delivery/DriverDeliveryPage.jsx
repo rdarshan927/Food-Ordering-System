@@ -1,6 +1,6 @@
-// export default DriverDeliveryPage;
-import React, { useEffect, useState } from 'react';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import React, { useEffect, useState, useRef } from 'react';
+// Remove MapContainer, TileLayer, Marker, Popup imports
+// import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
@@ -91,6 +91,11 @@ const DriverDeliveryPage = ({ driverId }) => {
   const [location, setLocation] = useState({ latitude: 0, longitude: 0 });
   const [delivery, setDelivery] = useState(null);
   const token = localStorage.getItem("token");
+  
+  // Add map ref to hold the map instance
+  const mapRef = useRef(null);
+  const leafletMapRef = useRef(null);
+  const markersRef = useRef([]);
 
   useEffect(() => {
     availableDeliveries();
@@ -120,6 +125,82 @@ const DriverDeliveryPage = ({ driverId }) => {
 
     return () => clearInterval(intervalId);
   }, [driverId]);
+
+  // New effect to handle the map
+  useEffect(() => {
+    if (location.latitude === 0 || location.longitude === 0) return;
+    
+    if (!mapRef.current) return;
+    
+    // Clean up existing markers
+    if (markersRef.current.length > 0) {
+      markersRef.current.forEach(marker => {
+        if (leafletMapRef.current) {
+          marker.remove();
+        }
+      });
+      markersRef.current = [];
+    }
+    
+    // Initialize map if not already initialized
+    if (!leafletMapRef.current) {
+      leafletMapRef.current = L.map(mapRef.current).setView(
+        [location.latitude, location.longitude], 
+        13
+      );
+      
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a>'
+      }).addTo(leafletMapRef.current);
+    } else {
+      // Update map center if already initialized
+      leafletMapRef.current.setView([location.latitude, location.longitude], 13);
+    }
+    
+    // Add driver marker
+    const driverMarker = L.marker(
+      [location.latitude, location.longitude], 
+      { icon: DriverLabelIcon }
+    ).addTo(leafletMapRef.current);
+    driverMarker.bindPopup('Your Location');
+    markersRef.current.push(driverMarker);
+    
+    // Add customer marker if available
+    if (delivery?.customerLocation || 
+        (delivery?.destinationLatitude && delivery?.destinationLongitude)) {
+      const custLat = delivery.customerLocation?.latitude || delivery.destinationLatitude;
+      const custLng = delivery.customerLocation?.longitude || delivery.destinationLongitude;
+      
+      const customerMarker = L.marker(
+        [custLat, custLng], 
+        { icon: CustomerLabelIcon }
+      ).addTo(leafletMapRef.current);
+      customerMarker.bindPopup('Customer');
+      markersRef.current.push(customerMarker);
+    }
+    
+    // Add restaurant marker if available
+    if (delivery?.restaurantLocation || 
+        (delivery?.shopLatitude && delivery?.shopLongitude)) {
+      const restLat = delivery.restaurantLocation?.latitude || delivery.shopLatitude;
+      const restLng = delivery.restaurantLocation?.longitude || delivery.shopLongitude;
+      
+      const restaurantMarker = L.marker(
+        [restLat, restLng], 
+        { icon: ShopLabelIcon }
+      ).addTo(leafletMapRef.current);
+      restaurantMarker.bindPopup('Restaurant');
+      markersRef.current.push(restaurantMarker);
+    }
+    
+    // Clean up function
+    return () => {
+      if (leafletMapRef.current && !mapRef.current) {
+        leafletMapRef.current.remove();
+        leafletMapRef.current = null;
+      }
+    };
+  }, [location, delivery]);
 
   const availableDeliveries = () => {
     fetch(`http://localhost:8081/api/delivery/by-driver/${driverId}`, {
@@ -221,28 +302,18 @@ const DriverDeliveryPage = ({ driverId }) => {
               </div>
               
               <div className="h-[600px] w-full rounded-xl overflow-hidden border-2 border-gray-200 shadow-lg">
-                {location.latitude !== 0 && location.longitude !== 0 && (
-                  <MapContainer
-                    center={[location.latitude, location.longitude]}
-                    zoom={15}
-                    className="h-full w-full"
-                  >
-                    <TileLayer
-                      url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                      attribution='&copy; OpenStreetMap contributors'
-                    />
-                    <Marker position={[delivery.shopLatitude, delivery.shopLongitude]} icon={ShopLabelIcon}>
-                      <Popup>Shop Location</Popup>
-                    </Marker>
-                    <Marker position={[delivery.destinationLatitude, delivery.destinationLongitude]} icon={CustomerLabelIcon}>
-                      <Popup>Customer (Delivery Destination)</Popup>
-                    </Marker>
-                    <Marker position={[delivery.driverLatitude, delivery.driverLongitude]} icon={DriverLabelIcon}>
-                      <Popup>Driver Location</Popup>
-                    </Marker>
-                  </MapContainer>
+                <div 
+                  ref={mapRef} 
+                  className="h-full w-full" 
+                  style={{ display: location.latitude !== 0 && location.longitude !== 0 ? 'block' : 'none' }}
+                ></div>
+                {location.latitude === 0 && location.longitude === 0 && (
+                  <div className="h-full w-full flex items-center justify-center">
+                    <p className="text-gray-400">Loading map...</p>
+                  </div>
                 )}
               </div>
+
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center py-20">
