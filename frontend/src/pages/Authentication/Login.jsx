@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { jwtDecode } from "jwt-decode";
+import { useNavigate } from 'react-router-dom';
 import { Link, useNavigate } from 'react-router-dom';
 // import { useNavigate } from 'react-router-dom';
 
@@ -9,6 +10,7 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
   const [userId, setUserId] = useState('');
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -23,11 +25,15 @@ const Login = () => {
       });
 
       const decoded = jwtDecode(res.data.token);
+      console.log("Decoded JWT:", decoded); // Optional: Debugging output
 
       localStorage.setItem("userId", decoded.id);
       localStorage.setItem("role", decoded.role);
       localStorage.setItem("username", decoded.username);
       localStorage.setItem('token', res.data.token);
+      localStorage.setItem('useremailc', res.data.user.email);
+
+      console.log("Login successful:", res.data.user.email);
 
       setUserId(decoded.id);
       setMessage('Login successful!');
@@ -35,6 +41,8 @@ const Login = () => {
       // navigate('/'); // Redirect to home page or dashboard
       // console.log(decoded.id)
       navigate(`/driver/${decoded.id}`);
+
+      navigate('/customer-dashboard'); // Redirect to customer dashboard
 
     } catch (err) {
       setMessage(err.response?.data?.message || 'Login failed');
