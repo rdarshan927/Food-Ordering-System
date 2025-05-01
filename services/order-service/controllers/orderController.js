@@ -94,6 +94,32 @@ exports.getOrderById = async (req, res) => {
     }
 };
 
+// Get orders by customer email
+exports.getOrdersByCustomerEmail = async (req, res) => {
+    try {
+        const id = req.params.id;
+        
+        if (!id) {
+            return res.status(400).json({ message: "Customer email is required" });
+        }
+        
+        // Find all orders where customerId matches the email
+        const orders = await Order.find({ customerId: id }).sort({ createdAt: -1 });
+        
+        if (orders.length === 0) {
+            return res.status(200).json({ message: "No orders found for this customer", orders: [] });
+        }
+        
+        res.json(orders);
+    } catch (error) {
+        console.error('Error fetching customer orders:', error);
+        res.status(500).json({ 
+            error: 'Failed to fetch customer orders',
+            message: error.message 
+        });
+    }
+};
+
 // Update order
 exports.updateOrder = async (req, res) => {
     try {

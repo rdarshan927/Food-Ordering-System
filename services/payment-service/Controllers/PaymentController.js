@@ -1,6 +1,6 @@
 // controllers/PaymentController.js
 const Payment = require('../Model/PaymentModel');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 
 // Encrypt card details before saving (using bcrypt)
 const encryptCardDetails = async (cardNumber, cvv) => {

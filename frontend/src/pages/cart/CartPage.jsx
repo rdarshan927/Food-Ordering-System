@@ -198,7 +198,7 @@ const CartPage = () => {
             </div>
 
             {/* Receiver Details */}
-            <div className="bg-white/80 p-6 rounded-2xl shadow-lg">
+            {/* <div className="bg-white/80 p-6 rounded-2xl shadow-lg">
               <h2 className="font-bold text-2xl mb-4">Receiver Details</h2>
               <p className="font-semibold mt-2">Phone:</p>
               <p>{receiverPhone}</p>
@@ -210,7 +210,7 @@ const CartPage = () => {
               >
                 Edit Details
               </button>
-            </div>
+            </div> */}
           </aside>
 
           {/* Cart Items */}

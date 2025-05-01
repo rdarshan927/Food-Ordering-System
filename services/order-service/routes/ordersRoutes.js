@@ -5,7 +5,8 @@ const {
     getOrders,
     getOrderById,
     updateOrder,
-    deleteOrder
+    deleteOrder,
+    getOrdersByCustomerEmail
 } = require("../controllers/orderController");
 
 const router = express.Router();
@@ -18,6 +19,9 @@ router.get("/", getOrders);
 
 // Get order by ID
 router.get("/:id", getOrderById);
+
+// Get orders by customer email
+router.get("/customer/:id", getOrdersByCustomerEmail);
 
 // Update order
 router.put("/:id", updateOrder);

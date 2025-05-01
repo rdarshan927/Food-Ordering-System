@@ -27,9 +27,11 @@ import PaymentSuccess from "./pages/payment/PaymentSuccess.jsx";
 import MenuManagement from './pages/Restaurant/MenuManagement.jsx';
 import ProfileSettings from "./pages/Restaurant/ProfileSettings.jsx";
 import ErrorBoundary from "./components/ErrorBoundary";
+import RestaurantDetail from "./pages/Customer/RestaurantDetail";
 
 import styles from "./App.module.css";
 import { AuthProvider } from "./context/AuthContext";
+import CustomerTrackingPage from "./pages/Delivery/CustomerTrackingPage";
 
 // Wrapper for pages that need params
 const DriverDeliveryPageWrapper = () => {
@@ -78,7 +80,13 @@ const App = () => {
                 <Route path="/customer-dashboard" element={<CustomerDashboard />} />
                 <Route path="/cart" element={<CartPage />} />
                 <Route path="/payment-success" element={<PaymentSuccess />} />
-                {/* Redirect root path to login */}
+                <Route path="/customer-tracking/:orderId" element={<CustomerTrackingPage />} />
+                
+                {/* Add the new restaurant detail route */}
+                <Route path="/restaurant/:restaurantId" element={<RestaurantDetail />} />
+                <Route path="/restaurants" element={<CustomerDashboard />} />
+                
+                {/* Add other routes here */}
               </Routes>
             </main>
           </div>
