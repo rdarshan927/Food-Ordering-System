@@ -10,6 +10,7 @@ import DriverDeliveryPage from "./pages/Delivery/DriverDeliveryPage";
 import Login from "./pages/Authentication/Login";
 import Register from "./pages/Authentication/Register";
 import { useParams } from "react-router-dom";
+import CustomerTrackingPage from "./pages/Delivery/CustomerTrackingPage";
 
 const DriverDeliveryPageWrapper = () => {
   const { driverId } = useParams();
@@ -33,6 +34,8 @@ function App() {
               {/* PayPal checkout page route */}
               <Route path="/checkout" element={<Checkout />} />
               <Route path="add-payment" element={<AddPaymentMethod/>}/>
+              <Route path="/customer-tracking/:orderId" element={<CustomerTrackingPage />} />
+              {/* Add other routes here */}
             </Routes>
           </main>
         </div>
