@@ -1,43 +1,66 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 const DriverDashboard = () => {
+  const { driverId: urlDriverId } = useParams();
   const [statusMessage, setStatusMessage] = useState("Initializing location tracking...");
-  const [locationStatus, setLocationStatus] = useState("initializing"); // "initializing", "active", "error"
+  const [locationStatus, setLocationStatus] = useState("initializing");
   const [errorMessage, setErrorMessage] = useState(null);
-  const [driverId, setDriverId] = useState("driver007");
+  const [driverId, setDriverId] = useState("");
   const [deliveries, setDeliveries] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const token = localStorage.getItem("token");
 
   // Fetch driver's deliveries
   const fetchDeliveries = async () => {
+    if (!driverId) return;
+
     setIsLoading(true);
     try {
-      const token = localStorage.getItem("token");
       const response = await fetch(`http://localhost:8081/api/delivery/by-driver/${driverId}`, {
         headers: { 'Authorization': `Bearer ${token || ""}` }
       });
       
       if (response.ok) {
         const data = await response.json();
-        setDeliveries(Array.isArray(data) ? data : [data].filter(Boolean));
+        // Handle both array and single object responses
+        if (data && !Array.isArray(data) && data.orderId) {
+          setDeliveries([data]); // Convert single delivery to array
+        } else if (Array.isArray(data)) {
+          setDeliveries(data);
+        } else {
+          setDeliveries([]);
+        }
+      } else if (response.status === 404) {
+        // No deliveries found is a normal state
+        setDeliveries([]);
+      } else {
+        throw new Error(`Server returned ${response.status}`);
       }
     } catch (error) {
       console.error("Failed to fetch deliveries", error);
+      setErrorMessage(`Failed to load deliveries: ${error.message}`);
     } finally {
       setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    // Try to get driver ID from localStorage or use default
-    const storedDriverId = localStorage.getItem("driverId") || "driver007";
+    // Get driver ID from URL params, localStorage, or use default
+    const storedDriverId = urlDriverId || localStorage.getItem("driverId") || "driver007";
     setDriverId(storedDriverId);
+    localStorage.setItem("driverId", storedDriverId); // Store for consistency
+    
+  }, [urlDriverId]);
+
+  useEffect(() => {
+    if (!driverId) return;
     
     // Fetch deliveries initially
     fetchDeliveries();
-
+    
+    // Set up location tracking
     const watchId = navigator.geolocation.watchPosition(
       (position) => {
         setLocationStatus("active");
@@ -48,24 +71,23 @@ const DriverDashboard = () => {
           method: "POST",
           headers: { 
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${localStorage.getItem("token") || ""}` 
+            "Authorization": `Bearer ${token || ""}` 
           },
           body: JSON.stringify({
-            driverId: storedDriverId,
+            driverId,
             latitude: position.coords.latitude,
             longitude: position.coords.longitude,
           }),
         }).then(response => {
           if (!response.ok) {
-            throw new Error("Server error");
+            throw new Error(`Server error: ${response.status}`);
           }
           return response.json();
         }).then(() => {
           setStatusMessage("Location updated successfully");
         }).catch((error) => {
           console.error("Failed to update location:", error);
-          setErrorMessage("Failed to update location. Server may be down.");
-          // Don't change locationStatus to error here as geolocation is still working
+          setErrorMessage(`Failed to update location: ${error.message}`);
         });
       },
       (error) => {
@@ -94,14 +116,14 @@ const DriverDashboard = () => {
     );
 
     // Set up periodic refresh of deliveries
-    const intervalId = setInterval(fetchDeliveries, 30000); // refresh every 30 seconds
+    const intervalId = setInterval(fetchDeliveries, 15000); // refresh every 15 seconds
 
     return () => {
       navigator.geolocation.clearWatch(watchId);
       clearInterval(intervalId);
       setStatusMessage("Location tracking stopped");
     };
-  }, [driverId]);
+  }, [driverId, token]);
 
   const getStatusIcon = () => {
     switch (locationStatus) {
@@ -168,14 +190,19 @@ const DriverDashboard = () => {
                       {delivery.isDelivered ? 'Delivered' : 'In Progress'}
                     </span>
                   </div>
-                  {delivery.destinationAddress && (
-                    <p className="text-sm text-gray-600 mt-1">
-                      To: {delivery.destinationAddress}
-                    </p>
-                  )}
+                  <div className="mt-2 grid grid-cols-2 gap-2 text-sm">
+                    <div>
+                      <span className="text-gray-600">From:</span> 
+                      <span className="ml-1">Restaurant</span>
+                    </div>
+                    <div>
+                      <span className="text-gray-600">To:</span> 
+                      <span className="ml-1">Customer</span>
+                    </div>
+                  </div>
                   <button 
-                    onClick={() => navigate(`/driver/${driverId}`)}
-                    className="mt-2 text-sm text-blue-600 hover:underline"
+                    onClick={() => navigate(`/driver/${driverId}/delivery/${delivery.orderId || delivery.id}`)}
+                    className="mt-3 px-3 py-1 bg-red-100 text-red-800 rounded-md hover:bg-red-200 text-sm font-medium"
                   >
                     View Details →
                   </button>
