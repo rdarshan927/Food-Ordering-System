@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: payment-service
+  namespace: food-ordering-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: payment-service
+  template:
+    metadata:
+      labels:
+        app: payment-service
+    spec:
+      containers:
+      - name: payment-service
+        image: rdarshan927/food-ordering-system-payment-service:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 5056
+        env:
+        - name: PORT
+          value: "5056"
+        - name: NODE_ENV
+          valueFrom:
+            configMapKeyRef:
+              name: general-config
+              key: NODE_ENV
+        - name: MONGO_URI
+          valueFrom:
+            secretKeyRef:
+              name: db-secrets
+              key: PAYMENT_SERVICE_MONGO_URI
+        resources:
+          limits:
+            cpu: "300m"
+            memory: "512Mi"
+          requests:
+            cpu: "100m"
+            memory: "256Mi"
