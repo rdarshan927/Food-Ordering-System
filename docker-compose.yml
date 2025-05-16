@@ -85,10 +85,14 @@ services:
       - SPRING_RABBITMQ_PORT=5672
       - SPRING_RABBITMQ_USERNAME=guest
       - SPRING_RABBITMQ_PASSWORD=guest
+    hostname: delivery-service
+    container_name: delivery-service
     depends_on:
       - rabbitmq
     networks:
-      - food-ordering-network
+      food-ordering-network:
+        aliases:
+          - delivery-service
 
   # Infrastructure Services
   rabbitmq:
@@ -116,7 +120,6 @@ services:
       - rabbitmq
     networks:
       - food-ordering-network
-
 
 networks:
   food-ordering-network:
