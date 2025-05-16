@@ -16,7 +16,7 @@ const Dashboard = () => {
 
   // Check authentication first
   useEffect(() => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('tokenr');
     if (!token) {
       navigate('/login');
       return;
@@ -47,7 +47,7 @@ const Dashboard = () => {
       // Fetch menu items
       const menuResponse = await instance.get(`/api/restaurants/menu/${storedRestaurant.id}`, {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`
+          Authorization: `Bearer ${localStorage.getItem('tokenr')}`
         }
       });
       
