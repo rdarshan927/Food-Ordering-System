@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: usermanagement-service
+  namespace: food-ordering-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: usermanagement-service
+  template:
+    metadata:
+      labels:
+        app: usermanagement-service
+    spec:
+      containers:
+      - name: usermanagement-service
+        image: rdarshan927/food-ordering-system-usermanagement-service:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 5052
+        env:
+        - name: PORT
+          value: "5052"
+        - name: NODE_ENV
+          valueFrom:
+            configMapKeyRef:
+              name: general-config
+              key: NODE_ENV
+        - name: MONGO_URI
+          valueFrom:
+            secretKeyRef:
+              name: db-secrets
+              key: USER_SERVICE_MONGO_URI
+        - name: JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: db-secrets
+              key: USER_SERVICE_JWT_SECRET
+        resources:
+          limits:
+            cpu: "300m"
+            memory: "512Mi"
+          requests:
+            cpu: "100m"
+            memory: "256Mi"

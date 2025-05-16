@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: order-service
+  namespace: food-ordering-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: order-service
+  template:
+    metadata:
+      labels:
+        app: order-service
+    spec:
+      containers:
+      - name: order-service
+        image: rdarshan927/food-ordering-system-order-service:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 5051
+        env:
+        - name: PORT
+          value: "5051"
+        - name: NODE_ENV
+          valueFrom:
+            configMapKeyRef:
+              name: general-config
+              key: NODE_ENV
+        - name: MONGO_URI
+          valueFrom:
+            secretKeyRef:
+              name: db-secrets
+              key: ORDER_SERVICE_MONGO_URI
+        resources:
+          limits:
+            cpu: "300m"
+            memory: "512Mi"
+          requests:
+            cpu: "100m"
+            memory: "256Mi"
